@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#007bff">
+    <meta name="description" content="Pick random meals from your spreadsheet">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Meal Maker">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23007bff' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>🍽️</text></svg>">
+    <title>Meal Maker - Spreadsheet Item Picker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .file-status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+            font-weight: bold;
+        }
+        .file-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .file-status.loading {
+            background-color: #fff3cd;
+            color: #856404;
+            display: block;
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e8f4f8;
+            border-radius: 4px;
+            display: none;
+        }
+        .results.show {
+            display: block;
+        }
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-left: 4px solid #007bff;
+        }
+        .result-item strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Item Picker</h1>
+        <div id="fileStatus" class="file-status loading">Loading spreadsheet...</div>
+        <button id="pickBtn" onclick="pickItems()" disabled>Pick Random Items</button>
+        <button onclick="refreshData()" style="background-color: #28a745;">🔄 Refresh</button>
+        <div id="results" class="results"></div>
+    </div>
+
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        let spreadsheetData = [];
+        
+        // SheetDB API endpoint
+        const SHEET_URL = 'https://sheetdb.io/api/v1/xulj074rmcnui';
+
+        // Load data on page load
+        window.addEventListener('load', loadSpreadsheet);
+
+        function loadSpreadsheet() {
+            const statusDiv = document.getElementById('fileStatus');
+            statusDiv.textContent = 'Loading spreadsheet...';
+            statusDiv.className = 'file-status loading';
+            
+            fetch(SHEET_URL)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch');
+                    return response.json();
+                })
+                .then(data => {
+                    spreadsheetData = data;
+                    
+                    console.log('Loaded data:', spreadsheetData);
+                    console.log('First row:', spreadsheetData[0]);
+                    statusDiv.textContent = `✓ Spreadsheet loaded (${spreadsheetData.length} items)`;
+                    statusDiv.className = 'file-status success';
+                    document.getElementById('pickBtn').disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error fetching spreadsheet:', error);
+                    statusDiv.textContent = '✗ Error loading spreadsheet. Please try again.';
+                    statusDiv.className = 'file-status';
+                    statusDiv.style.backgroundColor = '#f8d7da';
+                    statusDiv.style.color = '#721c24';
+                    statusDiv.style.display = 'block';
+                });
+        }
+
+        function refreshData() {
+            loadSpreadsheet();
+        }
+
+        function pickItems() {
+            if (spreadsheetData.length === 0) {
+                alert('Please wait for spreadsheet to load');
+                return;
+            }
+
+            const categories = {};
+            
+            spreadsheetData.forEach(row => {
+                const category = row['Category'];
+                const item = row['Food'];
+                const enabled = row['Enabled'];
+
+                if (category && item && enabled) {
+                    if (!categories[category]) {
+                        categories[category] = [];
+                    }
+                    categories[category].push(item);
+                }
+            });
+
+            const results = {};
+            for (const category in categories) {
+                const items = categories[category];
+                results[category] = items[Math.floor(Math.random() * items.length)];
+            }
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Selected Items:</h2>';
+            
+            for (const category in results) {
+                resultsDiv.innerHTML += `
+                    <div class="result-item">
+                        <strong>${category}:</strong> ${results[category]}
+                    </div>
+                `;
+            }
+            
+            resultsDiv.classList.add('show');
+        }
+    </script>
+
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('✓ Service Worker registered successfully:', registration);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
