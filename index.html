@@ -128,15 +128,15 @@
         .result-item {
             display: inline-block;
             vertical-align: top;
-            width: 180px;
-            margin-right: 14px;
-            padding: 20px;
+            width: 118px;
+            margin-right: 10px;
+            padding: 10px;
             background: white;
-            border-radius: 14px;
+            border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             text-align: center;
-            font-size: 1.3em;
+            font-size: 1em;
             font-weight: 700;
             color: #333;
         }
@@ -319,10 +319,10 @@
             resultsDiv.innerHTML = '<div class="results-grid">';
             
             for (const category in results) {
-                const icon = getCategoryIcon(category);
+                const icon = getCategoryIcon(category, results[category]);
                 resultsDiv.innerHTML += `
                     <div class="result-item">
-                        <div style="font-size: 2.2em; margin-bottom: 10px;">${icon}</div>
+                        <div style="font-size: 1.5em; margin-bottom: 4px;">${icon}</div>
                         ${results[category]}
                     </div>
                 `;
@@ -332,7 +332,11 @@
             resultsDiv.classList.add('show');
         }
 
-        function getCategoryIcon(category) {
+        function getCategoryIcon(category, itemName = '') {
+            if (category === 'Protein' && itemName.toLowerCase().trim().includes('egg')) {
+                return '🥚';
+            }
+
             const icons = {
                 'Grain': '🌾',
                 'Protein': '🥩',
