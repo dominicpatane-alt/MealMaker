@@ -363,8 +363,12 @@
         }
 
         function getCategoryIcon(category, itemName = '') {
-            if (category === 'Protein' && itemName.toLowerCase().trim().includes('egg')) {
-                return '🥚';
+            const normalizedItem = itemName.toLowerCase().trim();
+
+            if (category === 'Protein') {
+                if (normalizedItem.includes('egg')) return '🥚';
+                if (normalizedItem.includes('tuna')) return '🐟';
+                if (normalizedItem.includes('chicken')) return '🐔';
             }
 
             const icons = {
