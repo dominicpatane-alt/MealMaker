@@ -111,25 +111,24 @@
             animation: fadeIn 0.5s ease-in;
         }
         .results-grid {
-            display: flex;
-            align-items: stretch;
-            justify-content: flex-start;
-            flex-wrap: nowrap;
-            gap: 16px;
-            margin-top: 20px;
+            display: block;
             overflow-x: auto;
-            padding-bottom: 4px;
+            white-space: nowrap;
+            margin-top: 20px;
+            padding-bottom: 5px;
         }
         .results-grid::-webkit-scrollbar {
-            height: 8px;
+            height: 10px;
         }
         .results-grid::-webkit-scrollbar-thumb {
-            background: rgba(0,0,0,0.25);
+            background: rgba(0,0,0,0.2);
             border-radius: 8px;
         }
         .result-item {
-            flex: 0 0 180px;
-            min-width: 160px;
+            display: inline-block;
+            vertical-align: top;
+            width: 180px;
+            margin-right: 14px;
             padding: 20px;
             background: white;
             border-radius: 14px;
@@ -139,6 +138,9 @@
             font-size: 1.3em;
             font-weight: 700;
             color: #333;
+        }
+        .results-grid .result-item:last-child {
+            margin-right: 0;
         }
         .result-item:hover {
             transform: translateY(-3px);
@@ -273,19 +275,5 @@
         }
     </script>
 
-    <!-- Service Worker Registration for PWA -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => {
-                        console.log('✓ Service Worker registered successfully:', registration);
-                    })
-                    .catch(error => {
-                        console.log('Service Worker registration failed:', error);
-                    });
-            });
-        }
-    </script>
 </body>
 </html>
