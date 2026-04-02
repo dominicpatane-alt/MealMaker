@@ -2,11 +2,11 @@
   "name": "Meal Maker - Random Meal Picker",
   "short_name": "Meal Maker",
   "description": "Pick random meals from your spreadsheet",
-  "start_url": "/",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
-  "scope": "/",
+  "scope": "./",
   "icons": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23007bff' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>🍽️</text></svg>",
