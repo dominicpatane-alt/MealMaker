@@ -349,7 +349,7 @@
                     html += `
                         <div class="item-checkbox">
                             <label>
-                                <input type="checkbox" ${enabled ? 'checked' : ''} data-id="${id}" data-category="${category}" data-item="${item}">
+                                <input type="checkbox" ${enabled ? 'checked' : ''} data-id="${id || ''}" data-category="${category}" data-item="${item}">
                                 ${item}
                             </label>
                         </div>
@@ -376,10 +376,12 @@
 
             checkboxes.forEach(cb => {
                 const id = cb.getAttribute('data-id');
+                const item = cb.getAttribute('data-item');
                 const newEnabled = cb.checked;
-                const row = spreadsheetData.find(r => r.id == id);
-                if (row && String(row['Enabled']).toUpperCase().trim() === 'TRUE' !== newEnabled) {
-                    updates.push({ id, enabled: newEnabled });
+                const row = spreadsheetData.find(r => (id ? r.id == id : r.Food === item));
+                const currentEnabled = row ? String(row['Enabled']).toUpperCase().trim() === 'TRUE' : false;
+                if (row && currentEnabled !== newEnabled) {
+                    updates.push({ id: row.id, item: row.Food, enabled: newEnabled });
                 }
             });
 
@@ -392,8 +394,9 @@
 
             // Send updates
             for (const update of updates) {
+                const updateTarget = update.id ? `${SHEET_URL}/id/${update.id}` : `${SHEET_URL}/Food/${encodeURIComponent(update.item)}`;
                 try {
-                    const response = await fetch(`${SHEET_URL}/id/${update.id}`, {
+                    const response = await fetch(updateTarget, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ Enabled: update.enabled ? 'TRUE' : 'FALSE' })
@@ -402,10 +405,10 @@
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
                     const result = await response.json();
-                    console.log('Update result for id', update.id, ':', result);
+                    console.log('Update result for', updateTarget, ':', result);
                 } catch (error) {
-                    console.error('Error updating item:', update.id, error);
-                    alert(`Error updating item ${update.id}: ${error.message}`);
+                    console.error('Error updating item:', updateTarget, error);
+                    alert(`Error updating item ${update.item || update.id}: ${error.message}`);
                     return;
                 }
             }
