@@ -255,30 +255,42 @@
     <script>
         let spreadsheetData = [];
         
-        // SheetDB API endpoint
-        const SHEET_URL = 'https://sheetdb.io/api/v1/xulj074rmcnui';
+        // Google Apps Script web app endpoint
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx_ljmCd4ipExfblatWEnG7LGUGxNIytiWLOxb7QwDf5vELmnDgPAImoqLkjVk2_LuNOw/exec';
 
         // Load data on page load
         window.addEventListener('load', loadSpreadsheet);
+
+        async function fetchApiJson(url, options = {}) {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const text = await response.text();
+            try {
+                return text ? JSON.parse(text) : {};
+            } catch (error) {
+                console.error('Invalid JSON response:', text);
+                throw new Error('API did not return valid JSON');
+            }
+        }
 
         function loadSpreadsheet() {
             const statusDiv = document.getElementById('fileStatus');
             statusDiv.textContent = 'Loading spreadsheet...';
             statusDiv.className = 'file-status loading';
             
-            fetch(SHEET_URL)
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to fetch');
-                    return response.json();
-                })
+            fetchApiJson(API_URL)
                 .then(data => {
-                    spreadsheetData = data;
+                    const rows = Array.isArray(data) ? data : data.items || data.data || [];
+                    spreadsheetData = rows;
                     
                     // Count enabled items
-                    const enabledCount = data.filter(row => 
+                    const enabledCount = rows.filter(row => 
                         String(row['Enabled']).toUpperCase().trim() === 'TRUE'
                     ).length;
-                    const totalCount = data.length;
+                    const totalCount = rows.length;
                     
                     console.log('Loaded data:', spreadsheetData);
                     console.log('First row:', spreadsheetData[0]);
@@ -381,22 +393,23 @@
                 const item = row['Food'];
                 const enabled = String(row['Enabled']).toUpperCase().trim() === 'TRUE';
                 const id = row['id'];
+                const rowIndex = row['rowIndex'];
 
                 if (!categories[category]) {
                     categories[category] = [];
                 }
-                categories[category].push({ item, enabled, id });
+                categories[category].push({ item, enabled, id, rowIndex });
             });
 
             // Build HTML
             let html = '<h2>Manage Items</h2>';
             for (const category in categories) {
                 html += `<div class="item-group"><h3>${category}</h3>`;
-                categories[category].forEach(({ item, enabled, id }) => {
+                categories[category].forEach(({ item, enabled, id, rowIndex }) => {
                     html += `
                         <div class="item-checkbox">
                             <label>
-                                <input type="checkbox" ${enabled ? 'checked' : ''} data-id="${id || ''}" data-category="${category}" data-item="${item}">
+                                <input type="checkbox" ${enabled ? 'checked' : ''} data-id="${id || ''}" data-row-index="${rowIndex || ''}" data-category="${category}" data-item="${item}">
                                 ${item}
                             </label>
                         </div>
@@ -423,12 +436,14 @@
 
             checkboxes.forEach(cb => {
                 const id = cb.getAttribute('data-id');
+                const rowIndex = cb.getAttribute('data-row-index');
                 const item = cb.getAttribute('data-item');
+                const category = cb.getAttribute('data-category');
                 const newEnabled = cb.checked;
-                const row = spreadsheetData.find(r => (id ? r.id == id : r.Food === item));
+                const row = spreadsheetData.find(r => (id ? r.id == id : rowIndex ? String(r.rowIndex) === String(rowIndex) : r.Food === item && r.Category === category));
                 const currentEnabled = row ? String(row['Enabled']).toUpperCase().trim() === 'TRUE' : false;
                 if (row && currentEnabled !== newEnabled) {
-                    updates.push({ id: row.id, item: row.Food, enabled: newEnabled });
+                    updates.push({ id: row.id || '', rowIndex: row.rowIndex || '', item: row.Food, category: row.Category, enabled: newEnabled });
                 }
             });
 
@@ -448,30 +463,37 @@
                 saveBtn.textContent = 'Saving...';
             }
 
-            for (const update of updates) {
-                const updateTarget = update.id ? `${SHEET_URL}/id/${update.id}` : `${SHEET_URL}/Food/${encodeURIComponent(update.item)}`;
-                try {
-                    const response = await fetch(updateTarget, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ Enabled: update.enabled ? 'TRUE' : 'FALSE' })
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    const result = await response.json();
-                    console.log('Update result for', updateTarget, ':', result);
-                } catch (error) {
-                    console.error('Error updating item:', updateTarget, error);
-                    alert(`Error updating item ${update.item || update.id}: ${error.message}`);
-                    if (saveBtn) {
-                        saveBtn.disabled = false;
-                        saveBtn.style.opacity = '1';
-                        saveBtn.style.cursor = 'pointer';
-                        saveBtn.textContent = 'Save Changes';
-                    }
-                    return;
+            try {
+                const result = await fetchApiJson(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'updateItems',
+                        updates: updates.map(update => ({
+                            id: update.id,
+                            rowIndex: update.rowIndex,
+                            item: update.item,
+                            category: update.category,
+                            enabled: update.enabled ? 'TRUE' : 'FALSE'
+                        }))
+                    })
+                });
+
+                if (result && result.success === false) {
+                    throw new Error(result.message || 'Update failed');
                 }
+
+                console.log('Update result:', result);
+            } catch (error) {
+                console.error('Error updating items:', error);
+                alert(`Error saving changes: ${error.message}`);
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = '1';
+                    saveBtn.style.cursor = 'pointer';
+                    saveBtn.textContent = 'Save Changes';
+                }
+                return;
             }
 
             alert('Changes saved successfully!');
