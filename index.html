@@ -430,6 +430,67 @@
             document.querySelector('.buttons-container').style.display = 'flex';
         }
 
+        async function sendUpdateToAppsScript(update) {
+            const payloads = [
+                {
+                    action: 'updateItem',
+                    rowIndex: update.rowIndex,
+                    item: update.item,
+                    category: update.category,
+                    enabled: update.enabled
+                },
+                {
+                    action: 'updateItem',
+                    rowIndex: update.rowIndex,
+                    Food: update.item,
+                    Category: update.category,
+                    Enabled: update.enabled
+                },
+                {
+                    action: 'updateItem',
+                    rowIndex: update.rowIndex,
+                    Food: update.item,
+                    Category: update.category,
+                    Enabled: update.enabled ? 'TRUE' : 'FALSE'
+                },
+                {
+                    action: 'updateItems',
+                    updates: [{
+                        rowIndex: update.rowIndex,
+                        item: update.item,
+                        category: update.category,
+                        enabled: update.enabled
+                    }]
+                }
+            ];
+
+            let lastError = new Error('Update failed');
+
+            for (const payload of payloads) {
+                try {
+                    const result = await fetchApiJson(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    console.log('Apps Script update attempt:', payload, result);
+
+                    if (result && result.success === false) {
+                        lastError = new Error(result.message || 'Update failed');
+                        continue;
+                    }
+
+                    return result;
+                } catch (error) {
+                    console.error('Apps Script update attempt failed:', payload, error);
+                    lastError = error;
+                }
+            }
+
+            throw lastError;
+        }
+
         async function saveChanges() {
             const checkboxes = document.querySelectorAll('#itemList input[type="checkbox"]');
             const updates = [];
@@ -464,26 +525,10 @@
             }
 
             try {
-                const result = await fetchApiJson(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'updateItems',
-                        updates: updates.map(update => ({
-                            id: update.id,
-                            rowIndex: update.rowIndex,
-                            item: update.item,
-                            category: update.category,
-                            enabled: update.enabled ? 'TRUE' : 'FALSE'
-                        }))
-                    })
-                });
-
-                if (result && result.success === false) {
-                    throw new Error(result.message || 'Update failed');
+                for (const update of updates) {
+                    const result = await sendUpdateToAppsScript(update);
+                    console.log('Update result:', result);
                 }
-
-                console.log('Update result:', result);
             } catch (error) {
                 console.error('Error updating items:', error);
                 alert(`Error saving changes: ${error.message}`);
