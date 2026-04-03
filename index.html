@@ -918,6 +918,11 @@
                 }
             }
 
+            const isSauce = String(row?.Category ?? '').toLowerCase().trim() === 'sauce';
+            if (!isSauce) {
+                return 5;
+            }
+
             const packSize = Number(getPackSizeValue(row));
             if (Number.isFinite(packSize) && packSize > 1) {
                 return Math.max(1, Math.ceil(packSize / 2));
