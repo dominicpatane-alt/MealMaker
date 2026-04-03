@@ -425,13 +425,18 @@
             fetchApiJson(API_URL)
                 .then(data => {
                     const rows = Array.isArray(data) ? data : data.items || data.data || [];
-                    spreadsheetData = rows;
+                    // Ignore blank/invalid rows from API responses to avoid accidental writes.
+                    spreadsheetData = rows.filter(row => {
+                        const item = String(row?.Food ?? '').trim();
+                        const category = String(row?.Category ?? '').trim();
+                        return item !== '' && category !== '';
+                    });
                     
                     // Count enabled items
-                    const enabledCount = rows.filter(row => 
+                    const enabledCount = spreadsheetData.filter(row => 
                         String(row['Enabled']).toUpperCase().trim() === 'TRUE'
                     ).length;
-                    const totalCount = rows.length;
+                    const totalCount = spreadsheetData.length;
                     
                     console.log('Loaded data:', spreadsheetData);
                     console.log('First row:', spreadsheetData[0]);
@@ -672,6 +677,10 @@
                         throw new Error(`Could not find ${selection.item} in the spreadsheet data.`);
                     }
 
+                    if (!row.rowIndex || Number.isNaN(Number(row.rowIndex))) {
+                        throw new Error(`Invalid row index for ${selection.item}. Refresh and try again.`);
+                    }
+
                     const currentStock = getStockValue(row);
                     const decrementAmount = selection.category === 'Sauce'
                         ? 0
@@ -727,12 +736,23 @@
         }
 
         async function sendUpdateToAppsScript(update) {
+            const rowIndex = Number(update.rowIndex);
+            if (!Number.isFinite(rowIndex) || rowIndex <= 0) {
+                throw new Error(`Refusing to update invalid row index: ${update.rowIndex}`);
+            }
+
+            const item = String(update.item || '').trim();
+            const category = String(update.category || '').trim();
+            if (!item || !category) {
+                throw new Error('Refusing to update blank item/category row');
+            }
+
             const payload = {
                 action: 'update',
-                rowIndex: Number(update.rowIndex),
+                rowIndex,
                 row: {
-                    Food: update.item,
-                    Category: update.category,
+                    Food: item,
+                    Category: category,
                     Enabled: update.enabled,
                     Stock: update.stock,
                     Exclusions: update.stock
@@ -767,6 +787,10 @@
                 const row = spreadsheetData.find(r => (id ? r.id == id : rowIndex ? String(r.rowIndex) === String(rowIndex) : r.Food === item && r.Category === category));
                 const currentEnabled = row ? String(row['Enabled']).toUpperCase().trim() === 'TRUE' : false;
                 if (row && currentEnabled !== newEnabled) {
+                    if (!row.rowIndex || Number.isNaN(Number(row.rowIndex))) {
+                        console.warn('Skipping checkbox update without valid rowIndex:', row);
+                        return;
+                    }
                     updates.push({
                         id: row.id || '',
                         rowIndex: row.rowIndex || '',
@@ -797,6 +821,10 @@
 
             try {
                 for (const update of updates) {
+                    if (!update.rowIndex || Number.isNaN(Number(update.rowIndex))) {
+                        console.warn('Skipping invalid save update:', update);
+                        continue;
+                    }
                     const result = await sendUpdateToAppsScript(update);
                     console.log('Update result:', result);
                 }
