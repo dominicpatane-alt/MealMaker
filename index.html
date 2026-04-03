@@ -596,7 +596,14 @@
                 }
             }
 
-            return `<div class="sauce-meta"><span class="sauce-open"><span class="sauce-label">Status:</span> <span class="${openedClass}">${openedText}</span></span><span class="sauce-expiry"><span class="sauce-label">Expiry:</span> <span class="expiry-value ${expiryClass}">${expiryDisplayValue}</span></span></div>`;
+            const statusMarkup = !opened || openedText === 'Expired'
+                ? `<span class="sauce-open"><span class="sauce-label">Status:</span> <span class="${openedClass}">${openedText}</span></span>`
+                : '';
+            const expiryMarkup = opened
+                ? `<span class="sauce-expiry"><span class="sauce-label">Expiry:</span> <span class="expiry-value ${expiryClass}">${expiryDisplayValue}</span></span>`
+                : '';
+
+            return `<div class="sauce-meta">${statusMarkup}${expiryMarkup}</div>`;
         }
 
         function loadSpreadsheet() {
