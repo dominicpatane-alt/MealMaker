@@ -861,6 +861,65 @@
             displayResults(results);
         }
 
+        function syncCurrentMealWithSpreadsheet() {
+            if (!currentMeal) {
+                return;
+            }
+
+            Object.keys(currentMeal).forEach(category => {
+                const selection = currentMeal[category];
+                const row = spreadsheetData.find(item => String(item.rowIndex) === String(selection?.rowIndex));
+                if (!row) {
+                    return;
+                }
+
+                const meta = sauceMetadataMap.get(makeItemKey(row?.Food, row?.Category)) || {};
+                const updatedSelection = {
+                    ...selection,
+                    item: row.Food,
+                    id: row.id || selection.id || '',
+                    rowIndex: row.rowIndex,
+                    category: row.Category || selection.category || category,
+                    enabled: String(row['Enabled']).toUpperCase().trim() === 'TRUE',
+                    stock: getStockValue(row),
+                    opened: meta.opened ?? getSauceOpenedValue(row),
+                    openDate: meta.openDate ?? getSauceOpenDateValue(row),
+                    shelfLifeDays: meta.shelfLifeDays ?? getSauceShelfLifeValue(row),
+                    expiry: meta.expiry ?? getSauceExpiryValue(row),
+                    exclusions: row.Exclusions || ''
+                };
+
+                updatedSelection.expiryDate = getItemExpiryDate(updatedSelection);
+                currentMeal[category] = updatedSelection;
+            });
+        }
+
+        function refreshVisibleContent() {
+            const resultsDiv = document.getElementById('results');
+            const itemListDiv = document.getElementById('itemList');
+            const secretView = document.getElementById('secretView');
+
+            if (resultsDiv?.classList.contains('show') && currentMeal) {
+                syncCurrentMealWithSpreadsheet();
+                displayResults(currentMeal);
+            }
+
+            if (itemListDiv?.classList.contains('show')) {
+                showItemList();
+            }
+
+            if (secretView?.classList.contains('show')) {
+                const currentTitle = secretView.querySelector('h2')?.textContent || '';
+                if (currentTitle.includes('I Bought')) {
+                    showBoughtItems();
+                } else if (currentTitle.includes('Expiring Items')) {
+                    showExpiringItems();
+                } else if (currentTitle.includes('Secret Menu')) {
+                    showSecretView();
+                }
+            }
+        }
+
         function renderSauceMeta(selectedItem) {
             const opened = isOpenedValue(selectedItem.opened);
             const expiryDate = parseDateValue(selectedItem.expiry) || (opened ? computeUseByFromOpenDate(selectedItem.openDate, selectedItem.shelfLifeDays) : null);
@@ -954,14 +1013,7 @@
                     statusDiv.className = 'file-status success';
                     document.getElementById('pickBtn').disabled = false;
                     statusDiv.onclick = showItemList;
-
-                    const secretView = document.getElementById('secretView');
-                    if (secretView && secretView.classList.contains('show')) {
-                        const currentTitle = secretView.querySelector('h2')?.textContent || '';
-                        if (currentTitle.includes('Secret Menu')) {
-                            showSecretView();
-                        }
-                    }
+                    refreshVisibleContent();
                 })
                 .catch(error => {
                     console.error('Error fetching spreadsheet:', error);
