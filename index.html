@@ -1600,9 +1600,7 @@
                 shoppingItems.forEach(entry => {
                     let statusLabel = 'Low Stock';
                     let statusClass = 'low';
-                    let subtext = entry.packSize
-                        ? `${entry.category} • ${entry.stock} left • Buy +${entry.packSize}`
-                        : `${entry.category} • ${entry.stock} left`;
+                    let subtext = `${entry.category} • ${entry.stock} left`;
 
                     if (entry.status === 'out') {
                         statusLabel = 'Out of Stock';
