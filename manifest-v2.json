@@ -1,0 +1,25 @@
+{
+  "name": "Dinner Decider",
+  "short_name": "Dinner Decider",
+  "description": "Pick random meals from your spreadsheet",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "sanji-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "sanji-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "productivity"]
+}
