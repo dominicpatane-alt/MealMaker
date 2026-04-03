@@ -90,22 +90,43 @@
         }
         .secret-view {
             margin-top: 10px;
-            padding: 18px;
+            padding: 20px 18px 16px;
             background: #fff;
             border-radius: 14px;
             display: none;
             box-shadow: 0 8px 20px rgba(0,0,0,0.12);
             border: 1px solid rgba(0,0,0,0.08);
-            text-align: left;
+            text-align: center;
         }
         .secret-view.show {
             display: block;
             animation: fadeIn 0.18s ease-out;
         }
         .secret-view h2 {
-            margin: 0 0 12px 0;
+            margin: 0 0 14px 0;
             font-size: 1.25em;
             color: #333;
+            text-align: center;
+        }
+        .secret-menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 220px;
+            margin: 0 auto;
+        }
+        .secret-menu-options button {
+            width: 100%;
+        }
+        .secret-return-wrap {
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+        .secret-return-btn {
+            background: linear-gradient(45deg, #6c757d, #5a6268);
         }
         h1 {
             color: #333;
@@ -745,8 +766,12 @@
 
             secretView.innerHTML = `
                 <h2>🍽️ Secret Menu</h2>
-                <button onclick="showExpiringItems()" style="background: linear-gradient(45deg, #ff9f1c, #f77f00);">⏳ Expiring</button>
-                <button onclick="hideSecretView()" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 10px;">↩ Return</button>
+                <div class="secret-menu-options">
+                    <button onclick="showExpiringItems()" style="background: linear-gradient(45deg, #ff9f1c, #f77f00);">⏳ Expiring</button>
+                </div>
+                <div class="secret-return-wrap">
+                    <button class="secret-return-btn" onclick="hideSecretView()">↩ Return</button>
+                </div>
             `;
             secretView.classList.add('show');
         }
@@ -1097,7 +1122,11 @@
                 });
             }
 
-            html += '<button class="save-btn" onclick="showSecretView()">↩ Return</button>';
+            html += `
+                <div class="secret-return-wrap">
+                    <button class="secret-return-btn" onclick="showSecretView()">↩ Return</button>
+                </div>
+            `;
             secretView.innerHTML = html;
             secretView.classList.add('show');
         }
