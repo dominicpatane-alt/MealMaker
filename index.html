@@ -1270,6 +1270,12 @@
             const statusDiv = document.getElementById('fileStatus');
             statusDiv.textContent = 'Loading spreadsheet...';
             statusDiv.className = 'file-status loading';
+
+            sauceMetadataMap = new Map();
+            const metaPromise = fetchApiJson(SAUCE_META_URL).catch(metaError => {
+                console.warn('Could not load sauce metadata endpoint:', metaError);
+                return null;
+            });
             
             fetchApiJson(API_URL)
                 .then(async data => {
@@ -1281,39 +1287,6 @@
                         return item !== '' && category !== '';
                     });
 
-                    // Merge sauce metadata from a read-only endpoint with full columns.
-                    sauceMetadataMap = new Map();
-                    try {
-                        const metaRows = await fetchApiJson(SAUCE_META_URL);
-                        if (Array.isArray(metaRows)) {
-                            metaRows.forEach(metaRow => {
-                                const key = makeItemKey(metaRow?.Food, metaRow?.Category);
-                                if (!key) return;
-                                sauceMetadataMap.set(key, {
-                                    opened: getSauceOpenedValue(metaRow),
-                                    expiry: getSauceExpiryValue(metaRow),
-                                    openDate: getSauceOpenDateValue(metaRow),
-                                    shelfLifeDays: getSauceShelfLifeValue(metaRow),
-                                    packSize: getPackSizeValue(metaRow)
-                                });
-                            });
-
-                            spreadsheetData = spreadsheetData.map(row => {
-                                const meta = sauceMetadataMap.get(makeItemKey(row?.Food, row?.Category)) || {};
-                                return {
-                                    ...row,
-                                    Opened: meta.opened ?? row.Opened,
-                                    UseByDate: meta.expiry ?? row.UseByDate,
-                                    ['Open date']: meta.openDate ?? row['Open date'],
-                                    ShelfLifeDays: meta.shelfLifeDays ?? row.ShelfLifeDays,
-                                    PackSize: meta.packSize ?? getPackSizeValue(row)
-                                };
-                            });
-                        }
-                    } catch (metaError) {
-                        console.warn('Could not load sauce metadata endpoint:', metaError);
-                    }
-                    
                     // Count enabled items
                     const enabledCount = spreadsheetData.filter(row => 
                         String(row['Enabled']).toUpperCase().trim() === 'TRUE'
@@ -1328,6 +1301,36 @@
                     document.getElementById('useExpiringBtn').disabled = false;
                     statusDiv.onclick = showItemList;
                     refreshVisibleContent();
+
+                    // Merge sauce metadata from the secondary endpoint after the main data is already usable.
+                    const metaRows = await metaPromise;
+                    if (Array.isArray(metaRows)) {
+                        metaRows.forEach(metaRow => {
+                            const key = makeItemKey(metaRow?.Food, metaRow?.Category);
+                            if (!key) return;
+                            sauceMetadataMap.set(key, {
+                                opened: getSauceOpenedValue(metaRow),
+                                expiry: getSauceExpiryValue(metaRow),
+                                openDate: getSauceOpenDateValue(metaRow),
+                                shelfLifeDays: getSauceShelfLifeValue(metaRow),
+                                packSize: getPackSizeValue(metaRow)
+                            });
+                        });
+
+                        spreadsheetData = spreadsheetData.map(row => {
+                            const meta = sauceMetadataMap.get(makeItemKey(row?.Food, row?.Category)) || {};
+                            return {
+                                ...row,
+                                Opened: meta.opened ?? row.Opened,
+                                UseByDate: meta.expiry ?? row.UseByDate,
+                                ['Open date']: meta.openDate ?? row['Open date'],
+                                ShelfLifeDays: meta.shelfLifeDays ?? row.ShelfLifeDays,
+                                PackSize: meta.packSize ?? getPackSizeValue(row)
+                            };
+                        });
+
+                        refreshVisibleContent();
+                    }
                 })
                 .catch(error => {
                     console.error('Error fetching spreadsheet:', error);
