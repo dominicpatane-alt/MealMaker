@@ -331,6 +331,32 @@
             gap: 10px;
             margin-top: 12px;
         }
+        .sauce-open-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .sauce-open-question {
+            color: #666;
+            font-size: 0.82em;
+            font-weight: 600;
+        }
+        .open-toggle-btn {
+            min-width: 0;
+            width: auto;
+            padding: 6px 12px;
+            margin: 0;
+            font-size: 13px;
+            border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            background: linear-gradient(45deg, #4CAF50, #388E3C);
+        }
+        .open-toggle-btn.closed {
+            background: linear-gradient(45deg, #9e9e9e, #757575);
+        }
         .qty-btn {
             min-width: 38px;
             width: 38px;
@@ -633,37 +659,42 @@
             loadSpreadsheet();
         }
 
-        async function promptToOpenSelectedSauces(results) {
-            for (const category of Object.keys(results)) {
-                const selection = results[category];
-                const isSauce = String(selection?.category ?? category).toLowerCase().trim() === 'sauce';
+        async function toggleSauceOpened(categoryKey) {
+            if (!currentMeal || !currentMeal[categoryKey]) {
+                return;
+            }
 
-                if (!isSauce || isOpenedValue(selection.opened)) {
-                    continue;
-                }
+            const selection = currentMeal[categoryKey];
+            const nextOpened = !isOpenedValue(selection.opened);
+            const todayText = new Date().toLocaleDateString('en-AU');
 
-                const shouldOpen = window.confirm(`${selection.item} is currently unopened. Do you want to open it now?`);
-                if (shouldOpen) {
-                    selection.opened = true;
-                    try {
-                        await sendUpdateToAppsScript({
-                            id: selection.id || '',
-                            rowIndex: selection.rowIndex || '',
-                            item: selection.item,
-                            category: selection.category || category,
-                            enabled: true,
-                            stock: selection.stock,
-                            opened: true,
-                            openDate: selection.openDate || '',
-                            shelfLifeDays: selection.shelfLifeDays || '',
-                            useByDate: selection.expiry || selection.useByDate || '',
-                            exclusions: selection.exclusions || ''
-                        });
-                    } catch (error) {
-                        console.error('Error updating sauce opened state:', error);
-                        alert(`Could not update ${selection.item} to opened: ${error.message}`);
-                    }
-                }
+            const previousOpened = selection.opened;
+            const previousOpenDate = selection.openDate;
+            selection.opened = nextOpened;
+            if (nextOpened && !selection.openDate) {
+                selection.openDate = todayText;
+            }
+
+            try {
+                await sendUpdateToAppsScript({
+                    id: selection.id || '',
+                    rowIndex: selection.rowIndex || '',
+                    item: selection.item,
+                    category: selection.category || categoryKey,
+                    enabled: true,
+                    stock: selection.stock,
+                    opened: nextOpened,
+                    openDate: selection.openDate || '',
+                    shelfLifeDays: selection.shelfLifeDays || '',
+                    useByDate: selection.expiry || selection.useByDate || '',
+                    exclusions: selection.exclusions || ''
+                });
+                displayResults(currentMeal);
+            } catch (error) {
+                selection.opened = previousOpened;
+                selection.openDate = previousOpenDate;
+                console.error('Error updating sauce opened state:', error);
+                alert(`Could not update ${selection.item}: ${error.message}`);
             }
         }
 
@@ -722,7 +753,6 @@
             bomboclatCanTrigger = true;
             eggQuantity = 2;
             currentMeal = results;
-            await promptToOpenSelectedSauces(results);
             displayResults(results);
         }
 
@@ -741,6 +771,14 @@
                         ${selectedItem.item}
                         ${category === 'Sauce' ? '' : `<span class="stock-note">In stock: ${selectedItem.stock}</span>`}
                         ${isSauce ? renderSauceMeta(selectedItem) : ''}
+                        ${isSauce ? `
+                            <div class="sauce-open-controls">
+                                ${!isOpenedValue(selectedItem.opened) ? `<span class="sauce-open-question">Open sauce?</span>` : ''}
+                                <button class="open-toggle-btn ${isOpenedValue(selectedItem.opened) ? '' : 'closed'}" onclick="toggleSauceOpened('${category}')">
+                                    ${isOpenedValue(selectedItem.opened) ? 'Mark Unopened' : 'Open Sauce'}
+                                </button>
+                            </div>
+                        ` : ''}
                         ${isEggs ? (bomboclatActive ? `
                             <div class="bomboclat-note">Bomboclat!</div>
                         ` : `
