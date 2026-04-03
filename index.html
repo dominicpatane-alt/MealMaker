@@ -324,6 +324,9 @@
             margin: 22px 0 12px;
             flex-wrap: wrap;
         }
+        .use-expiring-btn {
+            background: linear-gradient(45deg, #7b2cbf, #5a189a);
+        }
         button {
             background: linear-gradient(45deg, #FF6B6B, #EE5A52);
             color: white;
@@ -811,6 +814,7 @@
         <div id="appMessage" class="app-message"></div>
         <div class="buttons-container">
             <button id="pickBtn" onclick="pickItems()" disabled>Make Dinner</button>
+            <button id="useExpiringBtn" class="use-expiring-btn" onclick="pickExpiringItems()" disabled>Use Expiring</button>
             <button onclick="refreshData()" style="background: linear-gradient(45deg, #4CAF50, #388E3C);">🔄 Refresh</button>
         </div>
         <div id="results" class="results"></div>
@@ -1321,6 +1325,7 @@
                     statusDiv.textContent = `✓ Spreadsheet loaded (${enabledCount} items enabled of ${totalCount})`;
                     statusDiv.className = 'file-status success';
                     document.getElementById('pickBtn').disabled = false;
+                    document.getElementById('useExpiringBtn').disabled = false;
                     statusDiv.onclick = showItemList;
                     refreshVisibleContent();
                 })
@@ -1373,7 +1378,6 @@
                 <h2>🍽️ Secret Menu</h2>
                 <div class="secret-menu-options">
                     <button onclick="showExpiringItems()" ${expiringButtonAttrs}>⏳ Expiring</button>
-                    <button onclick="pickExpiringItems()" ${useExpiringButtonAttrs}>🍽️ Use Expiring</button>
                     <button onclick="showShoppingList()" ${shoppingButtonAttrs}>🛍️ Shopping List</button>
                     <button onclick="showBoughtItems()" ${boughtButtonAttrs}>🛒 I Bought</button>
                 </div>
