@@ -995,6 +995,13 @@
             return directExpiry || fallbackExpiry;
         }
 
+        function setStatusVisibility(isVisible) {
+            const statusContainer = document.querySelector('.status-container');
+            if (statusContainer) {
+                statusContainer.style.display = isVisible ? 'flex' : 'none';
+            }
+        }
+
         function buildEnabledCategories() {
             const categories = {};
 
@@ -1373,6 +1380,7 @@
             const resultsDiv = document.getElementById('results');
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
+            setStatusVisibility(true);
             const hasLoadedData = spreadsheetData.length > 0;
             const expiringButtonAttrs = hasLoadedData
                 ? 'style="background: linear-gradient(45deg, #ff9f1c, #f77f00);"'
@@ -1407,6 +1415,7 @@
             const secretView = document.getElementById('secretView');
             const container = document.querySelector('.container');
             pendingBoughtAdjustments = {};
+            setStatusVisibility(true);
             secretView.classList.remove('show');
             container.classList.remove('secret-open');
             document.querySelector('.buttons-container').style.display = 'flex';
@@ -1856,6 +1865,8 @@
                 showAppMessage('Please wait for spreadsheet to load', 'info');
                 return;
             }
+
+            setStatusVisibility(false);
 
             const secretView = document.getElementById('secretView');
             const resultsDiv = document.getElementById('results');
