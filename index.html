@@ -153,35 +153,43 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
+        .bought-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
         .bought-item-row {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: stretch;
             justify-content: space-between;
-            gap: 14px;
-            padding: 14px;
-            margin: 10px 0;
+            gap: 10px;
+            padding: 12px;
+            margin: 0;
+            min-height: 124px;
             border-radius: 14px;
             background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);
             border: 1px solid rgba(102, 126, 234, 0.08);
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            flex-wrap: wrap;
         }
         .bought-item-meta {
-            flex: 1 1 180px;
+            flex: 1 1 auto;
             min-width: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            align-items: flex-start;
+            text-align: left;
         }
         .bought-item-name {
-            font-size: 1.22em;
+            font-size: 1.08em;
             font-weight: 800;
             line-height: 1.15;
             color: #2f3542;
         }
         .bought-stock-summary {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
         .bought-pill {
@@ -201,7 +209,9 @@
         .bought-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
             padding: 6px 8px;
             border-radius: 999px;
             background: rgba(102, 126, 234, 0.05);
@@ -391,28 +401,31 @@
                 width: 100%;
                 justify-self: center;
             }
+            .bought-grid {
+                gap: 8px;
+            }
             .bought-item-row {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-                padding: 12px;
+                gap: 8px;
+                padding: 10px;
+                min-height: 116px;
             }
             .bought-item-meta {
                 flex: 0 0 auto;
-                align-items: center;
-                text-align: center;
+                align-items: flex-start;
+                text-align: left;
                 gap: 6px;
             }
             .bought-stock-summary {
-                justify-content: center;
-            }
-            .bought-controls {
-                width: 100%;
-                justify-content: space-between;
+                justify-content: flex-start;
             }
             .qty-btn.step-btn {
-                flex: 1 1 0;
+                flex: 0 0 auto;
                 min-width: 0;
+            }
+        }
+        @media (max-width: 420px) {
+            .bought-grid {
+                grid-template-columns: 1fr;
             }
         }
         .item-list {
@@ -1768,7 +1781,7 @@
             `;
 
             Object.keys(categories).forEach(category => {
-                html += `<div class="bought-group"><h3>${category}</h3>`;
+                html += `<div class="bought-group"><h3>${category}</h3><div class="bought-grid">`;
                 categories[category].forEach(row => {
                     const rowKey = String(row.rowIndex || '');
                     const currentStock = getStockValue(row);
@@ -1792,7 +1805,7 @@
                         </div>
                     `;
                 });
-                html += '</div>';
+                html += '</div></div>';
             });
 
             html += `
