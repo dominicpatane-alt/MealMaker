@@ -83,6 +83,15 @@
         .container.secret-open .secret-sprite-btn {
             display: none;
         }
+        .container.results-open:not(.secret-open) .secret-sprite-btn {
+            width: 88px;
+            height: 88px;
+            right: 10px;
+            bottom: 10px;
+        }
+        .container.results-open .results {
+            padding-bottom: 72px;
+        }
         .secret-view {
             margin-top: 10px;
             padding: 20px 18px 16px;
@@ -1390,6 +1399,7 @@
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
             setStatusVisibility(true);
+            container.classList.remove('results-open');
             secretView.classList.remove('bought-mode');
             const hasLoadedData = spreadsheetData.length > 0;
             const expiringButtonAttrs = hasLoadedData
@@ -1568,6 +1578,10 @@
 
         function displayResults(results) {
             const resultsDiv = document.getElementById('results');
+            const container = document.querySelector('.container');
+            if (container) {
+                container.classList.add('results-open');
+            }
             resultsDiv.innerHTML = '<div class="results-grid">';
             
             for (const category in results) {
@@ -1680,6 +1694,7 @@
             // Hide buttons and results
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
+            container.classList.remove('results-open');
             secretView.classList.remove('show');
             container.classList.remove('secret-open');
 
@@ -1724,8 +1739,12 @@
 
         function hideItemList() {
             const itemListDiv = document.getElementById('itemList');
+            const container = document.querySelector('.container');
             itemListDiv.classList.remove('show');
             setStatusVisibility(!currentMeal);
+            if (currentMeal) {
+                container?.classList.add('results-open');
+            }
             document.querySelector('.buttons-container').style.display = 'flex';
         }
 
