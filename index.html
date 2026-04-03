@@ -750,8 +750,8 @@
                 const enabled = String(row['Enabled']).toUpperCase().trim();
                 const stock = getStockValue(row);
 
-                // Only include if enabled and currently in stock
-                if (category && item && (enabled === 'TRUE' || enabled === 'true') && stock > 0) {
+                // Include enabled items even if out of stock so the UI can show their status.
+                if (category && item && (enabled === 'TRUE' || enabled === 'true')) {
                     if (!categories[category]) {
                         categories[category] = [];
                     }
@@ -807,7 +807,7 @@
                     <div class="result-item">
                         <div style="font-size: 2em; margin-bottom: 8px;">${icon}</div>
                         ${selectedItem.item}
-                        ${category === 'Sauce' ? '' : `<span class="stock-note">In stock: ${selectedItem.stock}</span>`}
+                        ${category === 'Sauce' ? '' : `<span class="stock-note">${selectedItem.stock > 0 ? `In stock: ${selectedItem.stock}` : 'Out of Stock'}</span>`}
                         ${isSauce ? renderSauceMeta(selectedItem) : ''}
                         ${isSauce && !isOpenedValue(selectedItem.opened) ? `
                             <div class="sauce-open-controls">
