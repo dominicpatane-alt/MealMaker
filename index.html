@@ -619,6 +619,10 @@
             return row?.ShelfLifeDays ?? row?.['Shelf Life Days'] ?? row?.G ?? '';
         }
 
+        function getPackSizeValue(row) {
+            return row?.PackSize ?? row?.['Pack Size'] ?? row?.packSize ?? row?.packsize ?? row?.I ?? '';
+        }
+
         function isOpenedValue(value) {
             const normalized = String(value ?? '').toLowerCase().trim();
             return ['true', 'yes', 'y', '1', 'opened', 'open'].includes(normalized);
@@ -738,14 +742,16 @@
 
         function getPurchaseStep(row) {
             const explicitCandidates = [
-                row?.PackSize,
-                row?.['Pack Size'],
+                getPackSizeValue(row),
                 row?.BuyStep,
                 row?.['Buy Step'],
+                row?.buyStep,
                 row?.PurchaseStep,
                 row?.['Purchase Step'],
+                row?.purchaseStep,
                 row?.RestockStep,
-                row?.['Restock Step']
+                row?.['Restock Step'],
+                row?.restockStep
             ];
 
             for (const candidate of explicitCandidates) {
@@ -836,7 +842,8 @@
                                     opened: getSauceOpenedValue(metaRow),
                                     expiry: getSauceExpiryValue(metaRow),
                                     openDate: getSauceOpenDateValue(metaRow),
-                                    shelfLifeDays: getSauceShelfLifeValue(metaRow)
+                                    shelfLifeDays: getSauceShelfLifeValue(metaRow),
+                                    packSize: getPackSizeValue(metaRow)
                                 });
                             });
 
@@ -847,7 +854,8 @@
                                     Opened: meta.opened ?? row.Opened,
                                     UseByDate: meta.expiry ?? row.UseByDate,
                                     ['Open date']: meta.openDate ?? row['Open date'],
-                                    ShelfLifeDays: meta.shelfLifeDays ?? row.ShelfLifeDays
+                                    ShelfLifeDays: meta.shelfLifeDays ?? row.ShelfLifeDays,
+                                    PackSize: meta.packSize ?? getPackSizeValue(row)
                                 };
                             });
                         }
@@ -1309,7 +1317,7 @@
                         <div class="bought-item-row">
                             <div class="bought-item-meta">
                                 <div class="expiry-item-name">${row.Food}</div>
-                                <div class="stock-note">Current stock: ${currentStock} • Adds ${step} at a time</div>
+                                <div class="stock-note">Current stock: ${currentStock}</div>
                                 <div class="stock-note ${pendingAmount > 0 ? 'opened-yes' : ''}">After save: ${nextStock}</div>
                             </div>
                             <div class="bought-controls">
