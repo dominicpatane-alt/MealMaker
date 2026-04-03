@@ -1612,7 +1612,8 @@
                     } else if (entry.status === 'expiring') {
                         statusLabel = 'Expires soon';
                         statusClass = 'expiring';
-                        subtext = `${entry.category} • <span class="shopping-expiry-text">Expires ${formatDate(entry.expiryDate)}</span>`;
+                        const dayLabel = entry.daysUntilExpiry === 1 ? 'day' : 'days';
+                        subtext = `${entry.category} • <span class="shopping-expiry-text">Expires: ${entry.daysUntilExpiry} ${dayLabel}</span>`;
                     }
 
                     html += `
