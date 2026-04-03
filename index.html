@@ -354,9 +354,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             background: linear-gradient(45deg, #4CAF50, #388E3C);
         }
-        .open-toggle-btn.closed {
-            background: linear-gradient(45deg, #9e9e9e, #757575);
-        }
         .qty-btn {
             min-width: 38px;
             width: 38px;
@@ -665,13 +662,17 @@
             }
 
             const selection = currentMeal[categoryKey];
-            const nextOpened = !isOpenedValue(selection.opened);
+            if (isOpenedValue(selection.opened)) {
+                return;
+            }
+
+            const nextOpened = true;
             const todayText = new Date().toLocaleDateString('en-AU');
 
             const previousOpened = selection.opened;
             const previousOpenDate = selection.openDate;
             selection.opened = nextOpened;
-            if (nextOpened && !selection.openDate) {
+            if (!selection.openDate) {
                 selection.openDate = todayText;
             }
 
@@ -683,12 +684,30 @@
                     category: selection.category || categoryKey,
                     enabled: true,
                     stock: selection.stock,
-                    opened: nextOpened,
-                    openDate: selection.openDate || '',
+                    opened: 'TRUE',
+                    openDate: selection.openDate || todayText,
                     shelfLifeDays: selection.shelfLifeDays || '',
                     useByDate: selection.expiry || selection.useByDate || '',
                     exclusions: selection.exclusions || ''
                 });
+
+                const row = spreadsheetData.find(item => String(item.rowIndex) === String(selection.rowIndex));
+                if (row) {
+                    row.Opened = 'TRUE';
+                    row['Open date'] = selection.openDate || todayText;
+                }
+
+                const metaKey = makeItemKey(selection.item, selection.category || categoryKey);
+                if (metaKey) {
+                    sauceMetadataMap.set(metaKey, {
+                        ...(sauceMetadataMap.get(metaKey) || {}),
+                        opened: 'TRUE',
+                        openDate: selection.openDate || todayText,
+                        expiry: selection.expiry || selection.useByDate || '',
+                        shelfLifeDays: selection.shelfLifeDays || ''
+                    });
+                }
+
                 displayResults(currentMeal);
             } catch (error) {
                 selection.opened = previousOpened;
@@ -771,11 +790,11 @@
                         ${selectedItem.item}
                         ${category === 'Sauce' ? '' : `<span class="stock-note">In stock: ${selectedItem.stock}</span>`}
                         ${isSauce ? renderSauceMeta(selectedItem) : ''}
-                        ${isSauce ? `
+                        ${isSauce && !isOpenedValue(selectedItem.opened) ? `
                             <div class="sauce-open-controls">
-                                ${!isOpenedValue(selectedItem.opened) ? `<span class="sauce-open-question">Open sauce?</span>` : ''}
-                                <button class="open-toggle-btn ${isOpenedValue(selectedItem.opened) ? '' : 'closed'}" onclick="toggleSauceOpened('${category}')">
-                                    ${isOpenedValue(selectedItem.opened) ? 'Mark Unopened' : 'Open Sauce'}
+                                <span class="sauce-open-question">Open sauce?</span>
+                                <button class="open-toggle-btn" onclick="toggleSauceOpened('${category}')">
+                                    Open Sauce
                                 </button>
                             </div>
                         ` : ''}
@@ -1008,6 +1027,10 @@
 
             const normalizedCategory = category.toLowerCase().trim();
             const stockValue = update.stock;
+            const enabledValue = update.enabled ? 'TRUE' : 'FALSE';
+            const openedValue = normalizedCategory === 'sauce'
+                ? (isOpenedValue(update.opened) ? 'TRUE' : 'FALSE')
+                : (isOpenedValue(getSauceOpenedValue(update)) ? 'TRUE' : 'FALSE');
 
             const payload = {
                 action: 'update',
@@ -1015,10 +1038,10 @@
                 row: {
                     Food: item,
                     Category: category,
-                    Enabled: update.enabled,
+                    Enabled: enabledValue,
                     Stock: stockValue,
                     Exclusions: stockValue,
-                    Opened: normalizedCategory === 'sauce' ? isOpenedValue(update.opened) : getSauceOpenedValue(update),
+                    Opened: openedValue,
                     'Open date': normalizedCategory === 'sauce' ? (update.openDate ?? '') : getSauceOpenDateValue(update),
                     ShelfLifeDays: normalizedCategory === 'sauce' ? (update.shelfLifeDays ?? '') : getSauceShelfLifeValue(update),
                     UseByDate: normalizedCategory === 'sauce' ? (update.useByDate ?? '') : getSauceExpiryValue(update)
