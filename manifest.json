@@ -1,6 +1,6 @@
 {
-  "name": "Meal Maker - Random Meal Picker",
-  "short_name": "Meal Maker",
+  "name": "Dinner Decider",
+  "short_name": "Dinner Decider",
   "description": "Pick random meals from your spreadsheet",
   "start_url": "./index.html",
   "display": "standalone",
@@ -9,13 +9,13 @@
   "scope": "./",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icon-192.png?v=2",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "icon-512.png?v=2",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
