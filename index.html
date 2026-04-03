@@ -88,6 +88,9 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.12);
             border: 1px solid rgba(0,0,0,0.08);
             text-align: center;
+            max-height: 72vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .secret-view.show {
             display: block;
@@ -112,12 +115,63 @@
         .secret-return-wrap {
             display: flex;
             justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
             margin-top: 16px;
             padding-top: 14px;
             border-top: 1px solid rgba(0,0,0,0.08);
         }
         .secret-return-btn {
             background: linear-gradient(45deg, #6c757d, #5a6268);
+        }
+        .secret-note {
+            margin: 0 auto 14px;
+            max-width: 360px;
+            color: #666;
+            font-size: 0.88em;
+            line-height: 1.45;
+        }
+        .bought-group {
+            margin-top: 16px;
+            text-align: left;
+        }
+        .bought-group h3 {
+            margin: 0 0 8px;
+            color: #444;
+            font-size: 1.02em;
+        }
+        .bought-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            background: #f8f9fb;
+            flex-wrap: wrap;
+        }
+        .bought-item-meta {
+            flex: 1 1 180px;
+            min-width: 0;
+        }
+        .bought-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .qty-btn.step-btn {
+            width: auto;
+            min-width: 58px;
+            padding: 0 12px;
+            border-radius: 999px;
+        }
+        .bought-add-display {
+            min-width: 58px;
+            text-align: center;
+            font-size: 1em;
+            font-weight: 800;
+            color: #2f3542;
         }
         h1 {
             color: #333;
@@ -504,6 +558,7 @@
         let bomboclatTimeoutId = null;
         let bomboclatCanTrigger = true;
         let sauceMetadataMap = new Map();
+        let pendingBoughtAdjustments = {};
         
         // Google Apps Script web app endpoint
         const API_URL = 'https://script.google.com/macros/s/AKfycbx_ljmCd4ipExfblatWEnG7LGUGxNIytiWLOxb7QwDf5vELmnDgPAImoqLkjVk2_LuNOw/exec';
@@ -681,6 +736,33 @@
             return categories;
         }
 
+        function getPurchaseStep(row) {
+            const explicitCandidates = [
+                row?.PackSize,
+                row?.['Pack Size'],
+                row?.BuyStep,
+                row?.['Buy Step'],
+                row?.PurchaseStep,
+                row?.['Purchase Step'],
+                row?.RestockStep,
+                row?.['Restock Step']
+            ];
+
+            for (const candidate of explicitCandidates) {
+                const parsed = Number(candidate);
+                if (Number.isFinite(parsed) && parsed > 0) {
+                    return Math.round(parsed);
+                }
+            }
+
+            const itemName = String(row?.Food ?? row?.item ?? '').toLowerCase().trim();
+            if (itemName.includes('egg')) {
+                return 6;
+            }
+
+            return 1;
+        }
+
         function finishMealSelection(results) {
             bomboclatActive = false;
             if (bomboclatTimeoutId) {
@@ -815,6 +897,7 @@
                 <div class="secret-menu-options">
                     <button onclick="showExpiringItems()" style="background: linear-gradient(45deg, #ff9f1c, #f77f00);">⏳ Expiring</button>
                     <button onclick="pickExpiringItems()" style="background: linear-gradient(45deg, #7b2cbf, #5a189a);">🍽️ Use Expiring</button>
+                    <button onclick="showBoughtItems()" style="background: linear-gradient(45deg, #2a9d8f, #1d7f73);">🛒 I Bought</button>
                 </div>
                 <div class="secret-return-wrap">
                     <button class="secret-return-btn" onclick="hideSecretView()">↩ Return</button>
@@ -826,6 +909,7 @@
         function hideSecretView() {
             const secretView = document.getElementById('secretView');
             const container = document.querySelector('.container');
+            pendingBoughtAdjustments = {};
             secretView.classList.remove('show');
             container.classList.remove('secret-open');
             document.querySelector('.buttons-container').style.display = 'flex';
@@ -1180,6 +1264,162 @@
             `;
             secretView.innerHTML = html;
             secretView.classList.add('show');
+        }
+
+        function showBoughtItems() {
+            const secretView = document.getElementById('secretView');
+            const resultsDiv = document.getElementById('results');
+            const itemListDiv = document.getElementById('itemList');
+            const container = document.querySelector('.container');
+            document.querySelector('.buttons-container').style.display = 'none';
+            resultsDiv.classList.remove('show');
+            itemListDiv.classList.remove('show');
+            container.classList.add('secret-open');
+
+            const categories = {};
+            spreadsheetData
+                .filter(row => String(row?.Food ?? '').trim() !== '' && String(row?.Category ?? '').trim() !== '')
+                .sort((a, b) => {
+                    const categoryDiff = String(a.Category).localeCompare(String(b.Category));
+                    return categoryDiff !== 0 ? categoryDiff : String(a.Food).localeCompare(String(b.Food));
+                })
+                .forEach(row => {
+                    const category = row.Category;
+                    if (!categories[category]) {
+                        categories[category] = [];
+                    }
+                    categories[category].push(row);
+                });
+
+            let html = `
+                <h2>🛒 I Bought</h2>
+                <p class="secret-note">Add stock in smart purchase steps. Eggs already add in packs of 6, and if you later add a <strong>PackSize</strong> or <strong>Buy Step</strong> column to the sheet, each item will use that automatically.</p>
+            `;
+
+            Object.keys(categories).forEach(category => {
+                html += `<div class="bought-group"><h3>${category}</h3>`;
+                categories[category].forEach(row => {
+                    const rowKey = String(row.rowIndex || '');
+                    const currentStock = getStockValue(row);
+                    const step = getPurchaseStep(row);
+                    const pendingAmount = pendingBoughtAdjustments[rowKey] || 0;
+                    const nextStock = currentStock + pendingAmount;
+
+                    html += `
+                        <div class="bought-item-row">
+                            <div class="bought-item-meta">
+                                <div class="expiry-item-name">${row.Food}</div>
+                                <div class="stock-note">Current stock: ${currentStock} • Adds ${step} at a time</div>
+                                <div class="stock-note ${pendingAmount > 0 ? 'opened-yes' : ''}">After save: ${nextStock}</div>
+                            </div>
+                            <div class="bought-controls">
+                                <button class="qty-btn step-btn" onclick="changeBoughtAmount('${rowKey}', -${step})">−${step}</button>
+                                <span class="bought-add-display">+${pendingAmount}</span>
+                                <button class="qty-btn step-btn" onclick="changeBoughtAmount('${rowKey}', ${step})">+${step}</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            });
+
+            html += `
+                <div class="secret-return-wrap">
+                    <button id="saveBoughtBtn" class="save-btn" onclick="saveBoughtItems()">Save Stock</button>
+                    <button class="secret-return-btn" onclick="showSecretView()">↩ Return</button>
+                </div>
+            `;
+
+            secretView.innerHTML = html;
+            secretView.classList.add('show');
+        }
+
+        function changeBoughtAmount(rowIndex, delta) {
+            const key = String(rowIndex || '');
+            if (!key) {
+                return;
+            }
+
+            const secretView = document.getElementById('secretView');
+            const previousScroll = secretView ? secretView.scrollTop : 0;
+            const currentAmount = pendingBoughtAdjustments[key] || 0;
+            const nextAmount = Math.max(0, currentAmount + delta);
+
+            if (nextAmount === 0) {
+                delete pendingBoughtAdjustments[key];
+            } else {
+                pendingBoughtAdjustments[key] = nextAmount;
+            }
+
+            showBoughtItems();
+            requestAnimationFrame(() => {
+                const updatedSecretView = document.getElementById('secretView');
+                if (updatedSecretView) {
+                    updatedSecretView.scrollTop = previousScroll;
+                }
+            });
+        }
+
+        async function saveBoughtItems() {
+            const updates = Object.entries(pendingBoughtAdjustments)
+                .map(([rowIndex, addedStock]) => {
+                    const row = spreadsheetData.find(item => String(item.rowIndex) === String(rowIndex));
+                    if (!row || !Number.isFinite(Number(addedStock)) || Number(addedStock) <= 0) {
+                        return null;
+                    }
+
+                    const currentStock = getStockValue(row);
+                    return {
+                        id: row.id || '',
+                        rowIndex: row.rowIndex || '',
+                        item: row.Food,
+                        category: row.Category,
+                        enabled: String(row['Enabled']).toUpperCase().trim() === 'TRUE',
+                        stock: currentStock + Number(addedStock),
+                        opened: getSauceOpenedValue(row),
+                        openDate: getSauceOpenDateValue(row),
+                        shelfLifeDays: getSauceShelfLifeValue(row),
+                        useByDate: getSauceExpiryValue(row),
+                        exclusions: row.Exclusions || ''
+                    };
+                })
+                .filter(Boolean);
+
+            if (updates.length === 0) {
+                alert('Choose at least one item to add first.');
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveBoughtBtn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+            }
+
+            try {
+                for (const update of updates) {
+                    await sendUpdateToAppsScript(update);
+
+                    const row = spreadsheetData.find(item => String(item.rowIndex) === String(update.rowIndex));
+                    if (row) {
+                        row.Stock = update.stock;
+                        row.Exclusions = update.stock;
+                    }
+                }
+
+                pendingBoughtAdjustments = {};
+                showBoughtItems();
+                loadSpreadsheet();
+                alert('Stock added successfully!');
+            } catch (error) {
+                console.error('Error updating bought stock:', error);
+                alert(`Error saving stock: ${error.message}`);
+
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save Stock';
+                }
+            }
         }
 
         async function confirmMeal() {
