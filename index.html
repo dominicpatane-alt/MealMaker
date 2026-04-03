@@ -65,6 +65,61 @@
             position: relative;
             z-index: 1;
         }
+        .secret-sprite-btn {
+            position: absolute;
+            right: 8px;
+            bottom: 4px;
+            width: 120px;
+            height: 120px;
+            background: url('sanji-sprite.png') no-repeat center / contain;
+            border: none;
+            padding: 0;
+            margin: 0;
+            min-width: unset;
+            box-shadow: none;
+            cursor: pointer;
+            z-index: 25;
+        }
+        .secret-sprite-btn:hover {
+            transform: scale(1.04);
+            box-shadow: none;
+        }
+        .secret-sprite-btn:active {
+            transform: scale(0.98);
+        }
+        .secret-menu {
+            position: absolute;
+            right: 96px;
+            bottom: 92px;
+            width: 200px;
+            background: rgba(34, 34, 34, 0.96);
+            color: white;
+            border-radius: 14px;
+            padding: 12px;
+            display: none;
+            z-index: 30;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.28);
+            text-align: left;
+        }
+        .secret-menu.show {
+            display: block;
+            animation: fadeIn 0.18s ease-out;
+        }
+        .secret-menu-title {
+            font-size: 0.95em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ffd166;
+        }
+        .secret-menu button {
+            width: 100%;
+            min-width: unset;
+            margin: 6px 0 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            box-shadow: none;
+        }
         h1 {
             color: #333;
             margin-bottom: 30px;
@@ -432,6 +487,13 @@
         </div>
         <div id="results" class="results"></div>
         <div id="itemList" class="item-list"></div>
+        <div id="secretMenu" class="secret-menu">
+            <div class="secret-menu-title">🍽️ Secret Menu</div>
+            <button onclick="pickItems(); toggleSecretMenu(false);">🎲 Reroll Dinner</button>
+            <button onclick="refreshData(); toggleSecretMenu(false);" style="background: linear-gradient(45deg, #4CAF50, #388E3C);">🔄 Refresh Data</button>
+            <button onclick="showItemList(); toggleSecretMenu(false);" style="background: linear-gradient(45deg, #4361ee, #3a0ca3);">📝 Manage Items</button>
+        </div>
+        <button id="secretSpriteBtn" class="secret-sprite-btn" onclick="toggleSecretMenu()" aria-label="Open secret menu" title="Secret menu"></button>
     </div>
 
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -677,6 +739,17 @@
 
         function refreshData() {
             loadSpreadsheet();
+        }
+
+        function toggleSecretMenu(forceState) {
+            const menu = document.getElementById('secretMenu');
+            if (!menu) return;
+
+            const shouldShow = typeof forceState === 'boolean'
+                ? forceState
+                : !menu.classList.contains('show');
+
+            menu.classList.toggle('show', shouldShow);
         }
 
         async function toggleSauceOpened(categoryKey) {
@@ -962,6 +1035,18 @@
             itemListDiv.classList.remove('show');
             document.querySelector('.buttons-container').style.display = 'flex';
         }
+
+        document.addEventListener('click', (event) => {
+            const menu = document.getElementById('secretMenu');
+            const spriteBtn = document.getElementById('secretSpriteBtn');
+            if (!menu || !spriteBtn) return;
+
+            const clickedInsideMenu = menu.contains(event.target);
+            const clickedSprite = spriteBtn.contains(event.target);
+            if (!clickedInsideMenu && !clickedSprite) {
+                menu.classList.remove('show');
+            }
+        });
 
         async function confirmMeal() {
             if (!currentMeal) {
