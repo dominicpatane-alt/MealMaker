@@ -819,7 +819,11 @@
                         <div style="font-size: 2em; margin-bottom: 8px;">${icon}</div>
                         ${selectedItem.item}
                         ${category === 'Sauce'
-                            ? `<span class="stock-note ${selectedItem.stock > 0 && !isOpenedValue(selectedItem.opened) ? 'opened-yes' : selectedItem.stock > 0 ? '' : 'out-of-stock'}">${selectedItem.stock > 0 ? (!isOpenedValue(selectedItem.opened) ? 'In Stock!' : `In stock: ${selectedItem.stock}`) : 'Out of Stock'}</span>`
+                            ? `${selectedItem.stock > 0
+                                ? (!isOpenedValue(selectedItem.opened)
+                                    ? `<span class="stock-note opened-yes">In Stock!</span>`
+                                    : '')
+                                : `<span class="stock-note out-of-stock">Out of Stock</span>`}`
                             : `<span class="stock-note ${selectedItem.stock > 0 ? '' : 'out-of-stock'}">${selectedItem.stock > 0 ? `In stock: ${selectedItem.stock}` : 'Out of Stock'}</span>`}
                         ${isSauce && sauceHasStock ? renderSauceMeta(selectedItem) : ''}
                         ${isSauce && sauceHasStock && !isOpenedValue(selectedItem.opened) ? `
