@@ -292,6 +292,32 @@
             font-weight: 600;
             color: #666;
         }
+        .sauce-meta {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.78em;
+            font-weight: 600;
+            line-height: 1.35;
+        }
+        .sauce-open,
+        .sauce-expiry {
+            display: block;
+        }
+        .opened-yes {
+            color: #1b8f2f;
+        }
+        .opened-no {
+            color: #d62828;
+        }
+        .expiry-warning {
+            color: #f08c00;
+        }
+        .expiry-danger {
+            color: #d62828;
+        }
+        .expiry-normal {
+            color: #666;
+        }
         .egg-quantity-controls {
             display: flex;
             align-items: center;
@@ -417,6 +443,81 @@
             return Number.isFinite(parsedStock) ? Math.max(0, parsedStock) : 1;
         }
 
+        function getSauceOpenedValue(row) {
+            return row?.Opened ?? row?.opened ?? row?.E ?? '';
+        }
+
+        function getSauceExpiryValue(row) {
+            return row?.Expiry ?? row?.expiry ?? row?.['Expiry Date'] ?? row?.['expiry date'] ?? row?.H ?? '';
+        }
+
+        function isOpenedValue(value) {
+            const normalized = String(value ?? '').toLowerCase().trim();
+            return ['true', 'yes', 'y', '1', 'opened', 'open'].includes(normalized);
+        }
+
+        function parseDateValue(value) {
+            if (value === null || value === undefined || String(value).trim() === '') {
+                return null;
+            }
+
+            if (typeof value === 'number' && Number.isFinite(value)) {
+                // Support sheet/excel serial dates.
+                const serialDate = new Date(Math.round((value - 25569) * 86400 * 1000));
+                return Number.isNaN(serialDate.getTime()) ? null : serialDate;
+            }
+
+            const textValue = String(value).trim();
+            const numericValue = Number(textValue);
+            if (!Number.isNaN(numericValue) && Number.isFinite(numericValue) && textValue !== '') {
+                const serialDate = new Date(Math.round((numericValue - 25569) * 86400 * 1000));
+                if (!Number.isNaN(serialDate.getTime())) {
+                    return serialDate;
+                }
+            }
+
+            const parsed = new Date(textValue);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        function getDaysUntil(date) {
+            const today = new Date();
+            const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const expiryMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            return Math.ceil((expiryMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-AU', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        function renderSauceMeta(selectedItem) {
+            const opened = isOpenedValue(selectedItem.opened);
+            const openedClass = opened ? 'opened-yes' : 'opened-no';
+            const openedText = opened ? 'Opened' : 'Unopened';
+
+            const expiryDate = parseDateValue(selectedItem.expiry);
+            let expiryText = 'Expiry: Unknown';
+            let expiryClass = 'expiry-normal';
+
+            if (expiryDate) {
+                const daysUntilExpiry = getDaysUntil(expiryDate);
+                expiryText = `Expiry: ${formatDate(expiryDate)}`;
+
+                if (daysUntilExpiry < 7) {
+                    expiryClass = 'expiry-danger';
+                } else if (daysUntilExpiry < 14) {
+                    expiryClass = 'expiry-warning';
+                }
+            }
+
+            return `<div class="sauce-meta"><span class="sauce-open ${openedClass}">Status: ${openedText}</span><span class="sauce-expiry ${expiryClass}">${expiryText}</span></div>`;
+        }
+
         function loadSpreadsheet() {
             const statusDiv = document.getElementById('fileStatus');
             statusDiv.textContent = 'Loading spreadsheet...';
@@ -485,6 +586,8 @@
                         category,
                         enabled: true,
                         stock,
+                        opened: getSauceOpenedValue(row),
+                        expiry: getSauceExpiryValue(row),
                         exclusions: row['Exclusions'] || ''
                     });
                 }
@@ -520,11 +623,13 @@
                 const selectedItem = results[category];
                 const icon = getCategoryIcon(category, selectedItem.item);
                 const isEggs = category === 'Protein' && selectedItem.item.toLowerCase().trim().includes('egg');
+                const isSauce = String(category).toLowerCase().trim() === 'sauce';
                 resultsDiv.innerHTML += `
                     <div class="result-item">
                         <div style="font-size: 2em; margin-bottom: 8px;">${icon}</div>
                         ${selectedItem.item}
                         ${category === 'Sauce' ? '' : `<span class="stock-note">In stock: ${selectedItem.stock}</span>`}
+                        ${isSauce ? renderSauceMeta(selectedItem) : ''}
                         ${isEggs ? (bomboclatActive ? `
                             <div class="bomboclat-note">Bomboclat!</div>
                         ` : `
