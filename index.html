@@ -1595,11 +1595,16 @@
                         return null;
                     }
 
+                    const daysUntilExpiry = getDaysUntil(expiryDate);
+                    if (daysUntilExpiry > 14) {
+                        return null;
+                    }
+
                     return {
                         item,
                         category,
                         expiryDate,
-                        daysUntilExpiry: getDaysUntil(expiryDate)
+                        daysUntilExpiry
                     };
                 })
                 .filter(Boolean)
