@@ -283,11 +283,16 @@
         }
         .step-btn.step-minus:hover:not(:disabled),
         .step-btn.step-plus:hover:not(:disabled) {
-            background: inherit;
-            color: inherit;
             box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             filter: none;
             transform: none;
+        }
+        .step-btn.step-plus,
+        .step-btn.step-plus:hover:not(:disabled),
+        .step-btn.step-plus:focus:not(:disabled),
+        .step-btn.step-plus:active:not(:disabled) {
+            background: linear-gradient(45deg, #4CAF50, #388E3C);
+            color: white;
         }
         .bought-add-display {
             min-width: 52px;
