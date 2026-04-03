@@ -153,6 +153,25 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
         }
+        .bought-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .bought-header h2 {
+            margin: 0;
+            flex: 1 1 auto;
+            min-width: 0;
+            text-align: left;
+        }
+        .bought-reset-btn {
+            min-width: 104px;
+            padding: 11px 18px;
+            margin: 0;
+            flex: 0 0 auto;
+        }
         .bought-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -186,6 +205,7 @@
             font-weight: 800;
             line-height: 1.15;
             color: #2f3542;
+            word-break: break-word;
         }
         .bought-stock-summary {
             display: flex;
@@ -382,6 +402,17 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         }
         @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+            .container {
+                padding: 12px 12px 16px;
+            }
+            .secret-view {
+                padding: 14px 12px 12px;
+                max-height: 76vh;
+            }
             .results {
                 margin-top: 6px;
             }
@@ -401,13 +432,27 @@
                 width: 100%;
                 justify-self: center;
             }
+            .bought-header {
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+            .bought-header h2 {
+                font-size: 1.05em;
+                line-height: 1.1;
+            }
+            .bought-reset-btn {
+                min-width: 92px;
+                padding: 10px 14px;
+                font-size: 14px;
+            }
             .bought-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 8px;
             }
             .bought-item-row {
                 gap: 8px;
                 padding: 10px;
-                min-height: 116px;
+                min-height: 108px;
             }
             .bought-item-meta {
                 flex: 0 0 auto;
@@ -415,15 +460,48 @@
                 text-align: left;
                 gap: 6px;
             }
+            .bought-item-name {
+                font-size: 0.96em;
+            }
             .bought-stock-summary {
                 justify-content: flex-start;
+                gap: 4px;
+            }
+            .bought-pill {
+                padding: 3px 7px;
+                font-size: 0.7em;
+            }
+            .bought-controls {
+                gap: 6px;
+                padding: 5px 6px;
+            }
+            .bought-add-display {
+                min-width: 34px;
+                font-size: 0.95em;
             }
             .qty-btn.step-btn {
                 flex: 0 0 auto;
+                min-width: 50px;
+                height: 34px;
+                padding: 0 10px;
+                font-size: 0.95em;
+            }
+            .secret-return-wrap {
+                gap: 8px;
+            }
+            .secret-return-wrap .save-btn,
+            .secret-return-wrap .secret-return-btn {
+                flex: 1 1 0;
                 min-width: 0;
+                width: auto;
+            }
+            .bought-actions-sticky {
+                margin: 16px -12px -12px;
+                padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+                flex-wrap: nowrap;
             }
         }
-        @media (max-width: 420px) {
+        @media (max-width: 340px) {
             .bought-grid {
                 grid-template-columns: 1fr;
             }
@@ -1774,9 +1852,9 @@
                 : 'margin: 0;';
 
             let html = `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
-                    <h2 style="margin: 0;">🛒 I Bought</h2>
-                    <button class="secret-return-btn" style="${resetButtonStyle}" onclick="resetBoughtItems()">Reset</button>
+                <div class="bought-header">
+                    <h2>🛒 I Bought</h2>
+                    <button class="secret-return-btn bought-reset-btn" style="${resetButtonStyle}" onclick="resetBoughtItems()">Reset</button>
                 </div>
             `;
 
