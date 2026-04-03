@@ -309,6 +309,9 @@
         .opened-no {
             color: #d62828;
         }
+        .opened-expired {
+            color: #d62828;
+        }
         .expiry-warning {
             color: #f08c00;
         }
@@ -522,10 +525,9 @@
 
         function renderSauceMeta(selectedItem) {
             const opened = isOpenedValue(selectedItem.opened);
-            const openedClass = opened ? 'opened-yes' : 'opened-no';
-            const openedText = opened ? 'Opened' : 'Unopened';
-
             const expiryDate = parseDateValue(selectedItem.expiry);
+            let openedClass = opened ? 'opened-yes' : 'opened-no';
+            let openedText = opened ? 'Opened' : 'Unopened';
             let expiryText = 'Expiry: Unknown';
             let expiryClass = 'expiry-normal';
 
@@ -533,7 +535,11 @@
                 const daysUntilExpiry = getDaysUntil(expiryDate);
                 expiryText = `Expiry: ${formatDate(expiryDate)}`;
 
-                if (daysUntilExpiry < 7) {
+                if (daysUntilExpiry < 0) {
+                    openedClass = 'opened-expired';
+                    openedText = 'Expired';
+                    expiryClass = 'expiry-danger';
+                } else if (daysUntilExpiry < 7) {
                     expiryClass = 'expiry-danger';
                 } else if (daysUntilExpiry < 14) {
                     expiryClass = 'expiry-warning';
