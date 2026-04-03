@@ -1,14 +1,12 @@
 {
   "name": "Dinner Decider",
   "short_name": "Dinner Decider",
-  "description": "Dinner Decider helps you quickly pick a meal from your spreadsheet.",
+  "description": "Pick random meals from your spreadsheet",
   "start_url": "./index.html",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#f4f4fb",
-  "theme_color": "#5d56d6",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
   "scope": "./",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "sanji-icon-192.png",
