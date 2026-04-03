@@ -214,23 +214,7 @@
             word-break: break-word;
         }
         .bought-stock-summary {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .bought-pill {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: #eef1f6;
-            color: #5b6472;
-            font-size: 0.78em;
-            font-weight: 700;
-        }
-        .bought-pill.pending {
-            background: rgba(76, 175, 80, 0.14);
-            color: #1b8f2f;
+            display: none;
         }
         .bought-controls {
             display: flex;
@@ -270,6 +254,10 @@
             font-size: 1.05em;
             font-weight: 900;
             color: #2f3542;
+            transition: color 0.18s ease;
+        }
+        .bought-add-display.pending {
+            color: #1b8f2f;
         }
         h1 {
             color: #333;
@@ -474,9 +462,9 @@
                 justify-content: flex-start;
                 gap: 4px;
             }
-            .bought-pill {
+            .bought-stock-value {
                 padding: 3px 7px;
-                font-size: 0.7em;
+                font-size: 0.76em;
             }
             .bought-controls {
                 gap: 6px;
@@ -1890,19 +1878,15 @@
                     const currentStock = getStockValue(row);
                     const step = getPurchaseStep(row);
                     const pendingAmount = pendingBoughtAdjustments[rowKey] || 0;
-                    const nextStock = currentStock + pendingAmount;
+                    const displayStock = currentStock + pendingAmount;
 
                     html += `
                         <div class="bought-item-row">
                             <div class="bought-item-meta">
                                 <div class="bought-item-name">${row.Food}</div>
-                                <div class="bought-stock-summary">
-                                    <span class="bought-pill">Now ${currentStock}</span>
-                                    <span class="bought-pill ${pendingAmount > 0 ? 'pending' : ''}">After ${nextStock}</span>
-                                </div>
                             </div>
                             <div class="bought-controls">
-                                <span class="bought-add-display">+${pendingAmount}</span>
+                                <span class="bought-add-display ${pendingAmount > 0 ? 'pending' : ''}">${displayStock}</span>
                                 <button class="qty-btn step-btn step-plus" onclick="changeBoughtAmount('${rowKey}', ${step})">+${step}</button>
                             </div>
                         </div>
