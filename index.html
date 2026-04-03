@@ -1194,6 +1194,12 @@
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
             const hasLoadedData = spreadsheetData.length > 0;
+            const expiringButtonAttrs = hasLoadedData
+                ? 'style="background: linear-gradient(45deg, #ff9f1c, #f77f00);"'
+                : 'disabled title="Load spreadsheet first"';
+            const useExpiringButtonAttrs = hasLoadedData
+                ? 'style="background: linear-gradient(45deg, #7b2cbf, #5a189a);"'
+                : 'disabled title="Load spreadsheet first"';
             const shoppingButtonAttrs = hasLoadedData
                 ? 'style="background: linear-gradient(45deg, #3a86ff, #4361ee);"'
                 : 'disabled title="Load spreadsheet first"';
@@ -1208,8 +1214,8 @@
             secretView.innerHTML = `
                 <h2>🍽️ Secret Menu</h2>
                 <div class="secret-menu-options">
-                    <button onclick="showExpiringItems()" style="background: linear-gradient(45deg, #ff9f1c, #f77f00);">⏳ Expiring</button>
-                    <button onclick="pickExpiringItems()" style="background: linear-gradient(45deg, #7b2cbf, #5a189a);">🍽️ Use Expiring</button>
+                    <button onclick="showExpiringItems()" ${expiringButtonAttrs}>⏳ Expiring</button>
+                    <button onclick="pickExpiringItems()" ${useExpiringButtonAttrs}>🍽️ Use Expiring</button>
                     <button onclick="showShoppingList()" ${shoppingButtonAttrs}>🛍️ Shopping List</button>
                     <button onclick="showBoughtItems()" ${boughtButtonAttrs}>🛒 I Bought</button>
                 </div>
