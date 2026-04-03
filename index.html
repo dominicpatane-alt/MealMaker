@@ -541,8 +541,7 @@
             }
 
             const maxQty = Math.max(1, currentMeal.Protein.stock);
-            const cappedMaxQty = Math.min(maxQty, 6);
-            const nextQuantity = Math.min(cappedMaxQty, Math.max(1, eggQuantity + delta));
+            const nextQuantity = Math.min(maxQty, Math.max(1, eggQuantity + delta));
 
             const isTriggerTransition = eggQuantity === 5 && nextQuantity === 6 && bomboclatCanTrigger;
 
