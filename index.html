@@ -291,7 +291,7 @@
             margin-top: 6px;
             font-size: 0.8em;
             font-weight: 600;
-            color: #666;
+            color: #1b8f2f;
         }
         .stock-note.out-of-stock {
             color: #d62828;
@@ -812,8 +812,8 @@
                         <div style="font-size: 2em; margin-bottom: 8px;">${icon}</div>
                         ${selectedItem.item}
                         ${category === 'Sauce'
-                            ? `<span class="stock-note ${selectedItem.stock > 0 ? '' : 'out-of-stock'}">${selectedItem.stock > 0 ? `In stock: ${selectedItem.stock}` : 'Out of Stock'}</span>`
-                            : `<span class="stock-note ${selectedItem.stock > 0 ? '' : 'out-of-stock'}">${selectedItem.stock > 0 ? `In stock: ${selectedItem.stock}` : 'Out of Stock'}</span>`}
+                            ? `<span class="stock-note ${selectedItem.stock > 0 ? '' : 'out-of-stock'}">${selectedItem.stock > 0 ? 'In Stock!' : 'Out of Stock'}</span>`
+                            : `<span class="stock-note ${selectedItem.stock > 0 ? '' : 'out-of-stock'}">${selectedItem.stock > 0 ? 'In Stock!' : 'Out of Stock'}</span>`}
                         ${isSauce && sauceHasStock ? renderSauceMeta(selectedItem) : ''}
                         ${isSauce && sauceHasStock && !isOpenedValue(selectedItem.opened) ? `
                             <div class="sauce-open-controls">
