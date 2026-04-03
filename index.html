@@ -970,6 +970,10 @@
             const resultsDiv = document.getElementById('results');
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
+            const hasLoadedData = spreadsheetData.length > 0;
+            const boughtButtonAttrs = hasLoadedData
+                ? 'style="background: linear-gradient(45deg, #2a9d8f, #1d7f73);"'
+                : 'disabled title="Load spreadsheet first"';
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
             itemListDiv.classList.remove('show');
@@ -980,7 +984,7 @@
                 <div class="secret-menu-options">
                     <button onclick="showExpiringItems()" style="background: linear-gradient(45deg, #ff9f1c, #f77f00);">⏳ Expiring</button>
                     <button onclick="pickExpiringItems()" style="background: linear-gradient(45deg, #7b2cbf, #5a189a);">🍽️ Use Expiring</button>
-                    <button onclick="showBoughtItems()" style="background: linear-gradient(45deg, #2a9d8f, #1d7f73);">🛒 I Bought</button>
+                    <button onclick="showBoughtItems()" ${boughtButtonAttrs}>🛒 I Bought</button>
                 </div>
                 <div class="secret-return-wrap">
                     <button class="secret-return-btn" onclick="hideSecretView()">↩ Return</button>
@@ -1350,6 +1354,11 @@
         }
 
         function showBoughtItems() {
+            if (spreadsheetData.length === 0) {
+                alert('Please wait for spreadsheet to load');
+                return;
+            }
+
             const secretView = document.getElementById('secretView');
             const resultsDiv = document.getElementById('results');
             const itemListDiv = document.getElementById('itemList');
