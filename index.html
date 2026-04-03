@@ -101,6 +101,9 @@
             display: block;
             animation: fadeIn 0.18s ease-out;
         }
+        .secret-view.bought-mode {
+            padding-top: 0;
+        }
         .secret-view h2 {
             margin: 0 0 14px 0;
             font-size: 1.25em;
@@ -166,10 +169,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 0 10px;
-            padding: 8px 0 10px;
+            margin: 0 -18px 12px;
+            padding: 10px 18px 12px;
             background: #fff;
-            border-bottom: 1px solid rgba(0,0,0,0.04);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
         }
         .bought-header h2 {
             display: none;
@@ -436,8 +440,8 @@
             }
             .bought-header {
                 top: 0;
-                margin: 0 0 8px;
-                padding: 6px 0 8px;
+                margin: 0 -12px 8px;
+                padding: 8px 12px 10px;
             }
             .bought-reset-btn {
                 min-width: 82px;
@@ -1385,6 +1389,7 @@
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
             setStatusVisibility(true);
+            secretView.classList.remove('bought-mode');
             const hasLoadedData = spreadsheetData.length > 0;
             const expiringButtonAttrs = hasLoadedData
                 ? 'style="background: linear-gradient(45deg, #ff9f1c, #f77f00);"'
@@ -1420,6 +1425,7 @@
             const container = document.querySelector('.container');
             pendingBoughtAdjustments = {};
             setStatusVisibility(true);
+            secretView.classList.remove('bought-mode');
             secretView.classList.remove('show');
             container.classList.remove('secret-open');
             document.querySelector('.buttons-container').style.display = 'flex';
@@ -1663,6 +1669,7 @@
             const resultsDiv = document.getElementById('results');
             const secretView = document.getElementById('secretView');
             const container = document.querySelector('.container');
+            secretView.classList.remove('bought-mode');
 
             // Hide buttons and results
             document.querySelector('.buttons-container').style.display = 'none';
@@ -1742,6 +1749,7 @@
         function showExpiringItems() {
             const secretView = document.getElementById('secretView');
             const resultsDiv = document.getElementById('results');
+            secretView.classList.remove('bought-mode');
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
 
@@ -1813,6 +1821,7 @@
             const resultsDiv = document.getElementById('results');
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
+            secretView.classList.remove('bought-mode');
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
             itemListDiv.classList.remove('show');
@@ -1876,6 +1885,7 @@
             const resultsDiv = document.getElementById('results');
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
+            secretView.classList.add('bought-mode');
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
             itemListDiv.classList.remove('show');
