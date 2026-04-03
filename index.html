@@ -279,6 +279,24 @@
         .item-list.show {
             display: block;
         }
+        .expiry-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            background: #f8f9fb;
+            font-size: 0.95em;
+        }
+        .expiry-item-name {
+            font-weight: 700;
+            color: #333;
+        }
+        .expiry-item-date {
+            font-weight: 700;
+        }
         .item-list h2 {
             margin: 0 0 16px;
             font-size: 1.25em;
@@ -489,9 +507,7 @@
         <div id="itemList" class="item-list"></div>
         <div id="secretMenu" class="secret-menu">
             <div class="secret-menu-title">🍽️ Secret Menu</div>
-            <button onclick="pickItems(); toggleSecretMenu(false);">🎲 Reroll Dinner</button>
-            <button onclick="refreshData(); toggleSecretMenu(false);" style="background: linear-gradient(45deg, #4CAF50, #388E3C);">🔄 Refresh Data</button>
-            <button onclick="showItemList(); toggleSecretMenu(false);" style="background: linear-gradient(45deg, #4361ee, #3a0ca3);">📝 Manage Items</button>
+            <button onclick="showExpiringItems(); toggleSecretMenu(false);" style="background: linear-gradient(45deg, #ff9f1c, #f77f00);">⏳ Expiring</button>
         </div>
         <button id="secretSpriteBtn" class="secret-sprite-btn" onclick="toggleSecretMenu()" aria-label="Open secret menu" title="Secret menu"></button>
     </div>
@@ -1034,6 +1050,67 @@
             const itemListDiv = document.getElementById('itemList');
             itemListDiv.classList.remove('show');
             document.querySelector('.buttons-container').style.display = 'flex';
+        }
+
+        function getExpiryClass(daysUntilExpiry) {
+            if (daysUntilExpiry < 0) return 'expiry-danger';
+            if (daysUntilExpiry <= 7) return 'expiry-danger';
+            if (daysUntilExpiry <= 14) return 'expiry-warning';
+            return 'expiry-normal';
+        }
+
+        function showExpiringItems() {
+            const itemListDiv = document.getElementById('itemList');
+            const resultsDiv = document.getElementById('results');
+            document.querySelector('.buttons-container').style.display = 'none';
+            resultsDiv.classList.remove('show');
+
+            const expiringItems = spreadsheetData
+                .map(row => {
+                    const item = String(row?.Food || '').trim();
+                    const category = String(row?.Category || '').trim();
+                    const directExpiry = parseDateValue(getSauceExpiryValue(row));
+                    const fallbackExpiry = isOpenedValue(getSauceOpenedValue(row))
+                        ? computeUseByFromOpenDate(getSauceOpenDateValue(row), getSauceShelfLifeValue(row))
+                        : null;
+                    const expiryDate = directExpiry || fallbackExpiry;
+
+                    if (!item || !category || !expiryDate) {
+                        return null;
+                    }
+
+                    return {
+                        item,
+                        category,
+                        expiryDate,
+                        daysUntilExpiry: getDaysUntil(expiryDate)
+                    };
+                })
+                .filter(Boolean)
+                .sort((a, b) => a.expiryDate - b.expiryDate);
+
+            let html = '<h2>Expiring Items</h2>';
+
+            if (expiringItems.length === 0) {
+                html += '<p>No items with expiry dates found.</p>';
+            } else {
+                expiringItems.forEach(entry => {
+                    const expiryClass = getExpiryClass(entry.daysUntilExpiry);
+                    html += `
+                        <div class="expiry-list-item">
+                            <div>
+                                <div class="expiry-item-name">${entry.item}</div>
+                                <div class="stock-note">${entry.category}</div>
+                            </div>
+                            <div class="expiry-item-date ${expiryClass}">${formatDate(entry.expiryDate)}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += '<button class="save-btn" onclick="hideItemList()">Close</button>';
+            itemListDiv.innerHTML = html;
+            itemListDiv.classList.add('show');
         }
 
         document.addEventListener('click', (event) => {
