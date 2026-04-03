@@ -379,6 +379,7 @@
         let eggQuantity = 2;
         let bomboclatActive = false;
         let bomboclatTimeoutId = null;
+        let bomboclatCanTrigger = true;
         
         // Google Apps Script web app endpoint
         const API_URL = 'https://script.google.com/macros/s/AKfycbx_ljmCd4ipExfblatWEnG7LGUGxNIytiWLOxb7QwDf5vELmnDgPAImoqLkjVk2_LuNOw/exec';
@@ -495,6 +496,7 @@
                 clearTimeout(bomboclatTimeoutId);
                 bomboclatTimeoutId = null;
             }
+            bomboclatCanTrigger = true;
             eggQuantity = 2;
             currentMeal = results;
             displayResults(results);
@@ -539,11 +541,15 @@
             }
 
             const maxQty = Math.max(1, currentMeal.Protein.stock);
-            const nextQuantity = Math.min(maxQty, Math.max(1, eggQuantity + delta));
+            const cappedMaxQty = Math.min(maxQty, 6);
+            const nextQuantity = Math.min(cappedMaxQty, Math.max(1, eggQuantity + delta));
 
-            if (nextQuantity > 5) {
+            const isTriggerTransition = eggQuantity === 5 && nextQuantity === 6 && bomboclatCanTrigger;
+
+            if (isTriggerTransition) {
                 bomboclatActive = true;
-                eggQuantity = 2;
+                bomboclatCanTrigger = false;
+                eggQuantity = 6;
                 displayResults(currentMeal);
 
                 if (bomboclatTimeoutId) {
@@ -552,16 +558,18 @@
 
                 bomboclatTimeoutId = setTimeout(() => {
                     bomboclatActive = false;
-                    eggQuantity = 2;
                     bomboclatTimeoutId = null;
                     if (currentMeal) {
                         displayResults(currentMeal);
                     }
-                }, 5000);
+                }, 2000);
                 return;
             }
 
             eggQuantity = nextQuantity;
+            if (eggQuantity <= 5) {
+                bomboclatCanTrigger = true;
+            }
             displayResults(currentMeal);
         }
 
