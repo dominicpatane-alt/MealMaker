@@ -221,6 +221,13 @@
             background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);
             border: 1px solid rgba(102, 126, 234, 0.08);
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+        .bought-item-row:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+            background: linear-gradient(180deg, #ffffff 0%, #f4f7ff 100%);
         }
         .bought-item-meta {
             flex: 0 0 auto;
@@ -276,7 +283,7 @@
         }
         .step-btn.step-minus:hover:not(:disabled),
         .step-btn.step-plus:hover:not(:disabled) {
-            filter: brightness(1.05);
+            filter: none;
         }
         .bought-add-display {
             min-width: 52px;
@@ -840,9 +847,9 @@
             transition: all 0.18s ease;
         }
         .qty-btn:hover:not(:disabled) {
-            background: #eef1f5;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.10);
-            transform: translateY(-1px);
+            background: #f8f9fb;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transform: none;
         }
         .qty-btn:active:not(:disabled) {
             background: #e6eaf0;
