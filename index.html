@@ -45,6 +45,30 @@
             position: relative;
             z-index: 1;
         }
+        .home-btn {
+            display: none;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 30;
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            padding: 0;
+            border-radius: 12px;
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            font-size: 20px;
+            line-height: 1;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .container.results-open .home-btn,
+        .container.secret-open .home-btn,
+        .container.item-list-open .home-btn {
+            display: inline-flex;
+        }
         .secret-sprite-btn {
             all: unset;
             position: absolute;
@@ -452,6 +476,14 @@
             .container {
                 padding: 12px 12px 16px;
                 max-height: calc(100dvh - 20px);
+            }
+            .home-btn {
+                top: 10px;
+                right: 10px;
+                width: 38px;
+                height: 38px;
+                min-width: 38px;
+                font-size: 18px;
             }
             .secret-view {
                 padding: 14px 12px 12px;
@@ -902,6 +934,7 @@
 </head>
 <body>
     <div class="container">
+        <button id="homeBtn" class="home-btn" onclick="goHome()" aria-label="Go home" title="Home">🏠</button>
         <div class="status-container">
             <div id="fileStatus" class="file-status loading">Loading spreadsheet...</div>
         </div>
@@ -1098,6 +1131,28 @@
             if (statusContainer) {
                 statusContainer.style.display = isVisible ? 'flex' : 'none';
             }
+        }
+
+        function goHome() {
+            const resultsDiv = document.getElementById('results');
+            const itemListDiv = document.getElementById('itemList');
+            const secretView = document.getElementById('secretView');
+            const container = document.querySelector('.container');
+
+            currentMeal = null;
+            bomboclatActive = false;
+            bomboclatCanTrigger = true;
+            eggQuantity = 2;
+            pendingBoughtAdjustments = {};
+            pendingManageStockChanges = {};
+
+            resultsDiv?.classList.remove('show');
+            itemListDiv?.classList.remove('show');
+            secretView?.classList.remove('show');
+            secretView?.classList.remove('bought-mode');
+            container?.classList.remove('results-open', 'secret-open', 'item-list-open');
+            document.querySelector('.buttons-container').style.display = 'flex';
+            setStatusVisibility(true);
         }
 
         function buildEnabledCategories() {
