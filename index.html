@@ -258,6 +258,31 @@
             color: white;
             box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
         }
+        .app-message {
+            display: none;
+            margin: 0 0 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.92em;
+            font-weight: 700;
+            text-align: center;
+        }
+        .app-message.show {
+            display: block;
+            animation: fadeIn 0.18s ease-out;
+        }
+        .app-message.success {
+            background: rgba(76, 175, 80, 0.14);
+            color: #1b8f2f;
+        }
+        .app-message.error {
+            background: rgba(214, 40, 40, 0.12);
+            color: #d62828;
+        }
+        .app-message.info {
+            background: rgba(58, 134, 255, 0.12);
+            color: #2f5fd0;
+        }
         .buttons-container {
             display: flex;
             gap: 15px;
@@ -672,6 +697,7 @@
         <div class="status-container">
             <div id="fileStatus" class="file-status loading">Loading spreadsheet...</div>
         </div>
+        <div id="appMessage" class="app-message"></div>
         <div class="buttons-container">
             <button id="pickBtn" onclick="pickItems()" disabled>Make Dinner</button>
             <button onclick="refreshData()" style="background: linear-gradient(45deg, #4CAF50, #388E3C);">🔄 Refresh</button>
@@ -692,6 +718,7 @@
         let bomboclatCanTrigger = true;
         let sauceMetadataMap = new Map();
         let pendingBoughtAdjustments = {};
+        let appMessageTimeoutId = null;
         
         // Google Apps Script web app endpoint
         const API_URL = 'https://script.google.com/macros/s/AKfycbx_ljmCd4ipExfblatWEnG7LGUGxNIytiWLOxb7QwDf5vELmnDgPAImoqLkjVk2_LuNOw/exec';
@@ -714,6 +741,26 @@
                 console.error('Invalid JSON response:', text);
                 throw new Error('API did not return valid JSON');
             }
+        }
+
+        function showAppMessage(message, type = 'info', duration = 3000) {
+            const messageDiv = document.getElementById('appMessage');
+            if (!messageDiv) {
+                return;
+            }
+
+            if (appMessageTimeoutId) {
+                clearTimeout(appMessageTimeoutId);
+            }
+
+            messageDiv.textContent = message;
+            messageDiv.className = `app-message show ${type}`;
+
+            appMessageTimeoutId = setTimeout(() => {
+                messageDiv.className = 'app-message';
+                messageDiv.textContent = '';
+                appMessageTimeoutId = null;
+            }, duration);
         }
 
         function getStockValue(row) {
@@ -1298,20 +1345,20 @@
                 selection.opened = previousOpened;
                 selection.openDate = previousOpenDate;
                 console.error('Error updating sauce opened state:', error);
-                alert(`Could not update ${selection.item}: ${error.message}`);
+                showAppMessage(`Could not update ${selection.item}: ${error.message}`, 'error', 4500);
             }
         }
 
         async function pickItems() {
             if (spreadsheetData.length === 0) {
-                alert('Please wait for spreadsheet to load');
+                showAppMessage('Please wait for spreadsheet to load', 'info');
                 return;
             }
 
             const categories = buildEnabledCategories();
 
             if (Object.keys(categories).length === 0) {
-                alert('No enabled items are currently in stock.');
+                showAppMessage('No enabled items are currently in stock.', 'error', 3500);
                 return;
             }
 
@@ -1326,14 +1373,14 @@
 
         async function pickExpiringItems() {
             if (spreadsheetData.length === 0) {
-                alert('Please wait for spreadsheet to load');
+                showAppMessage('Please wait for spreadsheet to load', 'info');
                 return;
             }
 
             const categories = buildEnabledCategories();
 
             if (Object.keys(categories).length === 0) {
-                alert('No enabled items are currently in stock.');
+                showAppMessage('No enabled items are currently in stock.', 'error', 3500);
                 return;
             }
 
@@ -1588,7 +1635,7 @@
 
         function showShoppingList() {
             if (spreadsheetData.length === 0) {
-                alert('Please wait for spreadsheet to load');
+                showAppMessage('Please wait for spreadsheet to load', 'info');
                 return;
             }
 
@@ -1648,7 +1695,7 @@
 
         function showBoughtItems() {
             if (spreadsheetData.length === 0) {
-                alert('Please wait for spreadsheet to load');
+                showAppMessage('Please wait for spreadsheet to load', 'info');
                 return;
             }
 
@@ -1772,7 +1819,7 @@
                 .filter(Boolean);
 
             if (updates.length === 0) {
-                alert('Choose at least one item to add first.');
+                showAppMessage('Choose at least one item to add first.', 'info');
                 return;
             }
 
@@ -1796,10 +1843,10 @@
                 pendingBoughtAdjustments = {};
                 showBoughtItems();
                 loadSpreadsheet();
-                alert('Stock added successfully!');
+                showAppMessage('Stock added successfully!', 'success');
             } catch (error) {
                 console.error('Error updating bought stock:', error);
-                alert(`Error saving stock: ${error.message}`);
+                showAppMessage(`Error saving stock: ${error.message}`, 'error', 4500);
 
                 if (saveBtn) {
                     saveBtn.disabled = false;
@@ -1810,7 +1857,7 @@
 
         async function confirmMeal() {
             if (!currentMeal) {
-                alert('Please generate a meal first.');
+                showAppMessage('Please generate a meal first.', 'info');
                 return;
             }
 
@@ -1874,7 +1921,7 @@
                 });
 
                 displayResults(currentMeal);
-                alert('Meal confirmed! Stock has been reduced by 1 for the selected items.');
+                showAppMessage('Meal confirmed! Stock has been reduced for the selected items.', 'success', 3500);
                 loadSpreadsheet();
 
                 if (confirmBtn) {
@@ -1882,7 +1929,7 @@
                 }
             } catch (error) {
                 console.error('Error confirming meal:', error);
-                alert(`Error confirming meal: ${error.message}`);
+                showAppMessage(`Error confirming meal: ${error.message}`, 'error', 4500);
 
                 if (confirmBtn) {
                     confirmBtn.disabled = false;
@@ -1999,7 +2046,7 @@
                 }
             } catch (error) {
                 console.error('Error updating items:', error);
-                alert(`Error saving changes: ${error.message}`);
+                showAppMessage(`Error saving changes: ${error.message}`, 'error', 4500);
                 if (saveBtn) {
                     saveBtn.disabled = false;
                     saveBtn.style.opacity = '1';
@@ -2009,7 +2056,7 @@
                 return;
             }
 
-            alert('Changes saved successfully!');
+            showAppMessage('Changes saved successfully!', 'success');
 
             setTimeout(() => {
                 if (saveBtn) {
