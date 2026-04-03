@@ -442,6 +442,11 @@
         }
 
         function getStockValue(row) {
+            const normalizedCategory = String(row?.Category ?? row?.category ?? '').toLowerCase().trim();
+            if (normalizedCategory === 'sauce') {
+                return 1;
+            }
+
             const rawStock = row?.Stock ?? row?.stock ?? row?.Exclusions ?? row?.exclusions ?? '';
 
             if (rawStock === '' || rawStock === null || rawStock === undefined) {
@@ -850,7 +855,7 @@
                         item: row.Food,
                         category: row.Category,
                         enabled: String(row['Enabled']).toUpperCase().trim() === 'TRUE',
-                        stock: Math.max(0, currentStock - decrementAmount),
+                        stock: selection.category === 'Sauce' ? 1 : Math.max(0, currentStock - decrementAmount),
                         exclusions: row.Exclusions || ''
                     };
                 });
@@ -905,6 +910,9 @@
                 throw new Error('Refusing to update blank item/category row');
             }
 
+            const normalizedCategory = category.toLowerCase().trim();
+            const stockValue = normalizedCategory === 'sauce' ? 1 : update.stock;
+
             const payload = {
                 action: 'update',
                 rowIndex,
@@ -912,8 +920,8 @@
                     Food: item,
                     Category: category,
                     Enabled: update.enabled,
-                    Stock: update.stock,
-                    Exclusions: update.stock
+                    Stock: stockValue,
+                    Exclusions: stockValue
                 }
             };
 
