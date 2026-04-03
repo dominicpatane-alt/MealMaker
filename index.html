@@ -166,6 +166,20 @@
             padding: 0 12px;
             border-radius: 999px;
         }
+        .step-btn.step-minus {
+            background: linear-gradient(45deg, #e63946, #c1121f);
+            color: white;
+            border: none;
+        }
+        .step-btn.step-plus {
+            background: linear-gradient(45deg, #4CAF50, #388E3C);
+            color: white;
+            border: none;
+        }
+        .step-btn.step-minus:hover:not(:disabled),
+        .step-btn.step-plus:hover:not(:disabled) {
+            filter: brightness(1.05);
+        }
         .bought-add-display {
             min-width: 58px;
             text-align: center;
@@ -1301,7 +1315,6 @@
 
             let html = `
                 <h2>🛒 I Bought</h2>
-                <p class="secret-note">Add stock in smart purchase steps. Eggs already add in packs of 6, and if you later add a <strong>PackSize</strong> or <strong>Buy Step</strong> column to the sheet, each item will use that automatically.</p>
             `;
 
             Object.keys(categories).forEach(category => {
@@ -1321,9 +1334,9 @@
                                 <div class="stock-note ${pendingAmount > 0 ? 'opened-yes' : ''}">After save: ${nextStock}</div>
                             </div>
                             <div class="bought-controls">
-                                <button class="qty-btn step-btn" onclick="changeBoughtAmount('${rowKey}', -${step})">−${step}</button>
+                                <button class="qty-btn step-btn step-minus" onclick="changeBoughtAmount('${rowKey}', -${step})">−${step}</button>
                                 <span class="bought-add-display">+${pendingAmount}</span>
-                                <button class="qty-btn step-btn" onclick="changeBoughtAmount('${rowKey}', ${step})">+${step}</button>
+                                <button class="qty-btn step-btn step-plus" onclick="changeBoughtAmount('${rowKey}', ${step})">+${step}</button>
                             </div>
                         </div>
                     `;
