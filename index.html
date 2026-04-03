@@ -303,6 +303,9 @@
         .sauce-expiry {
             display: block;
         }
+        .sauce-label {
+            color: #666;
+        }
         .opened-yes {
             color: #1b8f2f;
         }
@@ -546,7 +549,7 @@
                 }
             }
 
-            return `<div class="sauce-meta"><span class="sauce-open ${openedClass}">Status: ${openedText}</span><span class="sauce-expiry ${expiryClass}">${expiryText}</span></div>`;
+            return `<div class="sauce-meta"><span class="sauce-open"><span class="sauce-label">Status:</span> <span class="${openedClass}">${openedText}</span></span><span class="sauce-expiry ${expiryClass}">${expiryText}</span></div>`;
         }
 
         function loadSpreadsheet() {
