@@ -76,10 +76,49 @@
             top: 8px;
             left: 24px;
         }
+        .container.secret-menu-open .home-btn {
+            display: none;
+        }
+        .secret-menu-close-wrap {
+            display: flex;
+            justify-content: center;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+        .secret-menu-close-btn {
+            min-width: 0;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border-radius: 14px;
+            background: linear-gradient(45deg, #e63946, #c1121f);
+            box-shadow: 0 6px 16px rgba(198, 18, 31, 0.25);
+            font-size: 24px;
+            font-weight: 900;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .secret-menu-close-btn:hover:not(:disabled) {
+            box-shadow: 0 8px 18px rgba(198, 18, 31, 0.30);
+        }
         .container.item-list-open .home-btn {
             top: auto;
-            bottom: 30px;
-            left: 34px;
+            bottom: 34px;
+            left: 40px;
+            color: transparent;
+            font-size: 0;
+            background: linear-gradient(45deg, #e63946, #c1121f);
+            box-shadow: 0 4px 12px rgba(198, 18, 31, 0.28);
+        }
+        .container.item-list-open .home-btn::before {
+            content: '✕';
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: 900;
+            line-height: 1;
         }
         .container.bought-open .home-btn {
             top: 34px;
@@ -517,10 +556,34 @@
                 top: 8px;
                 left: 12px;
             }
+            .container.secret-menu-open .home-btn {
+                display: none;
+            }
+            .secret-menu-close-wrap {
+                margin-top: 14px;
+                padding-top: 12px;
+            }
+            .secret-menu-close-btn {
+                width: 46px;
+                height: 46px;
+                border-radius: 13px;
+                font-size: 22px;
+            }
             .container.item-list-open .home-btn {
                 top: auto;
-                bottom: 24px;
-                left: 18px;
+                bottom: 28px;
+                left: 22px;
+                color: transparent;
+                font-size: 0;
+                background: linear-gradient(45deg, #e63946, #c1121f);
+                box-shadow: 0 4px 12px rgba(198, 18, 31, 0.28);
+            }
+            .container.item-list-open .home-btn::before {
+                content: '✕';
+                color: #ffffff;
+                font-size: 22px;
+                font-weight: 900;
+                line-height: 1;
             }
             .container.bought-open .home-btn {
                 top: 30px;
@@ -666,8 +729,8 @@
             position: sticky;
             bottom: -16px;
             z-index: 8;
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
             margin: 18px -16px -16px;
             padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
@@ -676,8 +739,18 @@
             backdrop-filter: none;
         }
         .item-list-actions .save-btn {
+            grid-column: 2;
+            justify-self: center;
             margin-top: 0;
             min-width: 180px;
+        }
+        .item-list-actions .reset-btn {
+            grid-column: 3;
+            justify-self: end;
+            margin-top: 0;
+            min-width: 120px;
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
         }
         .expiry-list-item {
             display: flex;
@@ -1027,7 +1100,7 @@
 </head>
 <body>
     <div class="container">
-        <button id="homeBtn" class="home-btn" onclick="goHome()" aria-label="Go home" title="Home">🏠</button>
+        <button id="homeBtn" class="home-btn" onclick="handleHomeButton()" aria-label="Go home" title="Home">🏠</button>
         <div class="status-container">
             <div id="fileStatus" class="file-status loading">Loading spreadsheet...</div>
         </div>
@@ -1226,6 +1299,22 @@
             }
         }
 
+        function handleHomeButton() {
+            const container = document.querySelector('.container');
+
+            if (container?.classList.contains('secret-menu-open')) {
+                hideSecretView();
+                return;
+            }
+
+            if (container?.classList.contains('item-list-open')) {
+                hideItemList();
+                return;
+            }
+
+            goHome();
+        }
+
         function goHome() {
             const resultsDiv = document.getElementById('results');
             const itemListDiv = document.getElementById('itemList');
@@ -1243,7 +1332,7 @@
             itemListDiv?.classList.remove('show');
             secretView?.classList.remove('show');
             secretView?.classList.remove('bought-mode');
-            container?.classList.remove('results-open', 'secret-open', 'item-list-open', 'bought-open');
+            container?.classList.remove('results-open', 'secret-open', 'secret-menu-open', 'item-list-open', 'bought-open');
             document.querySelector('.buttons-container').style.display = 'flex';
             setStatusVisibility(true);
         }
@@ -1621,8 +1710,8 @@
             const resultsDiv = document.getElementById('results');
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
-            setStatusVisibility(true);
-            container.classList.remove('results-open', 'bought-open');
+            setStatusVisibility(false);
+            container.classList.remove('results-open', 'bought-open', 'item-list-open', 'secret-menu-open');
             secretView.classList.remove('bought-mode');
             const hasLoadedData = spreadsheetData.length > 0;
             const expiringButtonAttrs = hasLoadedData
@@ -1637,7 +1726,7 @@
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
             itemListDiv.classList.remove('show');
-            container.classList.add('secret-open');
+            container.classList.add('secret-open', 'secret-menu-open');
 
             secretView.innerHTML = `
                 <h2>🍽️ Secret Menu</h2>
@@ -1646,8 +1735,8 @@
                     <button onclick="showShoppingList()" ${shoppingButtonAttrs}>${hasLoadedData ? '🛍️ Shopping List' : 'Loading...'}</button>
                     <button onclick="showBoughtItems()" ${boughtButtonAttrs}>${hasLoadedData ? '🛒 I Bought' : 'Loading...'}</button>
                 </div>
-                <div class="secret-return-wrap">
-                    <button class="secret-return-btn" onclick="hideSecretView()">↩ Return</button>
+                <div class="secret-menu-close-wrap">
+                    <button class="secret-menu-close-btn" onclick="hideSecretView()" aria-label="Close secret menu" title="Close">✕</button>
                 </div>
             `;
             secretView.classList.add('show');
@@ -1662,7 +1751,7 @@
             setStatusVisibility(!currentMeal);
             secretView.classList.remove('bought-mode');
             secretView.classList.remove('show');
-            container.classList.remove('secret-open', 'bought-open');
+            container.classList.remove('secret-open', 'secret-menu-open', 'bought-open');
             document.querySelector('.buttons-container').style.display = 'flex';
 
             if (currentMeal) {
@@ -1919,7 +2008,7 @@
             resultsDiv.classList.remove('show');
             container.classList.remove('results-open');
             secretView.classList.remove('show');
-            container.classList.remove('secret-open');
+            container.classList.remove('secret-open', 'secret-menu-open');
             container.classList.add('item-list-open');
 
             // Group items by category
@@ -1972,6 +2061,7 @@
             html += `
                 <div class="item-list-actions">
                     <button class="save-btn" onclick="saveChanges()">Save Changes</button>
+                    <button class="save-btn reset-btn" onclick="resetManageStockChanges()">Reset</button>
                 </div>
             `;
 
@@ -2026,6 +2116,21 @@
             });
         }
 
+        function resetManageStockChanges() {
+            const itemListDiv = document.getElementById('itemList');
+            const previousScroll = itemListDiv ? itemListDiv.scrollTop : 0;
+
+            pendingManageStockChanges = {};
+            showItemList();
+
+            requestAnimationFrame(() => {
+                const updatedItemList = document.getElementById('itemList');
+                if (updatedItemList) {
+                    updatedItemList.scrollTop = previousScroll;
+                }
+            });
+        }
+
         function getExpiryClass(daysUntilExpiry) {
             if (daysUntilExpiry < 0) return 'expiry-danger';
             if (daysUntilExpiry <= 7) return 'expiry-danger';
@@ -2053,7 +2158,10 @@
         function showExpiringItems() {
             const secretView = document.getElementById('secretView');
             const resultsDiv = document.getElementById('results');
+            const container = document.querySelector('.container');
+            setStatusVisibility(true);
             secretView.classList.remove('bought-mode');
+            container?.classList.remove('secret-menu-open');
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
 
@@ -2125,7 +2233,9 @@
             const resultsDiv = document.getElementById('results');
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
+            setStatusVisibility(true);
             secretView.classList.remove('bought-mode');
+            container.classList.remove('secret-menu-open');
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
             itemListDiv.classList.remove('show');
@@ -2193,6 +2303,7 @@
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
             itemListDiv.classList.remove('show');
+            container.classList.remove('secret-menu-open');
             container.classList.add('secret-open', 'bought-open');
 
             const categories = {};
