@@ -78,8 +78,8 @@
             top: 36px;
         }
         .container.secret-open .home-btn {
-            top: 8px;
-            left: 24px;
+            top: 34px;
+            left: 30px;
         }
         .container.secret-menu-open .home-btn {
             display: none;
@@ -125,9 +125,23 @@
             font-weight: 900;
             line-height: 1;
         }
+        .container.item-list-open.bin-confirm-open .home-btn {
+            display: none;
+        }
         .container.bought-open .home-btn {
             top: 34px;
             left: 32px;
+            color: transparent;
+            font-size: 0;
+            background: linear-gradient(45deg, #e63946, #c1121f);
+            box-shadow: 0 4px 12px rgba(198, 18, 31, 0.28);
+        }
+        .container.bought-open .home-btn::before {
+            content: '✕';
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: 900;
+            line-height: 1;
         }
         .container.secret-open .status-container,
         .container.item-list-open .status-container {
@@ -217,15 +231,48 @@
             color: #333;
             text-align: center;
         }
-        .secret-menu-options {
+        .secret-panel-header {
+            position: sticky;
+            top: 0;
+            z-index: 12;
             display: flex;
-            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            min-height: 38px;
+            margin: -20px -18px 14px;
+            padding: 0 18px 12px;
+            box-sizing: border-box;
+            background: #fff;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+        }
+        .secret-panel-header h2 {
+            margin: -2px 0 0;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.15;
+        }
+        .secret-panel-body {
+            padding-top: 6px;
+        }
+        .secret-menu-options {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
-            max-width: 220px;
+            max-width: 420px;
             margin: 0 auto;
         }
         .secret-menu-options button {
             width: 100%;
+            min-width: 0;
+        }
+        .secret-menu-options button:last-child:nth-child(odd) {
+            grid-column: 1 / -1;
+            justify-self: center;
+            max-width: 200px;
         }
         .secret-return-wrap {
             display: flex;
@@ -419,7 +466,7 @@
             font-weight: 500;
             font-size: 12px;
             transition: all 0.3s ease;
-            cursor: pointer;
+            cursor: default;
         }
         .file-status.success {
             background: linear-gradient(45deg, #4CAF50, #45a049);
@@ -567,8 +614,8 @@
                 top: 32px;
             }
             .container.secret-open .home-btn {
-                top: 8px;
-                left: 12px;
+                top: 24px;
+                left: 16px;
             }
             .container.secret-menu-open .home-btn {
                 display: none;
@@ -602,6 +649,17 @@
             .container.bought-open .home-btn {
                 top: 30px;
                 left: 20px;
+                color: transparent;
+                font-size: 0;
+                background: linear-gradient(45deg, #e63946, #c1121f);
+                box-shadow: 0 4px 12px rgba(198, 18, 31, 0.28);
+            }
+            .container.bought-open .home-btn::before {
+                content: '✕';
+                color: #ffffff;
+                font-size: 22px;
+                font-weight: 900;
+                line-height: 1;
             }
             .container.secret-open .status-container,
             .container.item-list-open .status-container {
@@ -611,6 +669,11 @@
             .secret-view {
                 padding: 14px 12px 12px;
                 max-height: 76vh;
+            }
+            .secret-panel-header {
+                min-height: 36px;
+                margin: -14px -12px 10px;
+                padding: 0 12px 10px;
             }
             .results {
                 margin-top: 6px;
@@ -683,6 +746,14 @@
                 padding: 0 12px;
                 font-size: 1em;
             }
+            .secret-menu-options {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                max-width: 100%;
+                gap: 10px;
+            }
+            .secret-menu-options button:last-child:nth-child(odd) {
+                max-width: 180px;
+            }
             .secret-return-wrap {
                 gap: 6px;
             }
@@ -739,6 +810,40 @@
         .item-list.show {
             display: block;
         }
+        .item-group-header {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+        .item-group-header-spacer {
+            min-width: 0;
+        }
+        .stock-multiplier-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            margin: 0;
+            justify-self: end;
+            border-radius: 999px;
+            background: #f3f5f8;
+            color: #2f3542;
+            font-size: 0.88em;
+            font-weight: 800;
+            cursor: pointer;
+            user-select: none;
+        }
+        .stock-multiplier-toggle input {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            accent-color: #4361ee;
+            cursor: pointer;
+        }
         .item-list-actions {
             position: sticky;
             bottom: -16px;
@@ -765,6 +870,81 @@
             min-width: 120px;
             background: linear-gradient(45deg, #6c757d, #5a6268);
             box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+        .item-list-actions .delete-save-btn {
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+        .item-list-actions .delete-save-btn.armed,
+        .bin-confirm-actions .delete-save-btn {
+            background: linear-gradient(45deg, #e63946, #c1121f);
+            box-shadow: 0 6px 16px rgba(198, 18, 31, 0.22);
+        }
+        .item-list-actions .delete-save-btn.armed:hover:not(:disabled),
+        .bin-confirm-actions .delete-save-btn:hover:not(:disabled) {
+            box-shadow: 0 9px 20px rgba(198, 18, 31, 0.28);
+        }
+        .bin-note {
+            margin-bottom: 14px;
+        }
+        .bin-item-row {
+            align-items: center;
+        }
+        .bin-item-main {
+            align-items: flex-start;
+            white-space: normal;
+        }
+        .bin-item-meta {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: left;
+        }
+        .bin-expiry-note {
+            font-weight: 800;
+        }
+        .bin-empty-state {
+            margin: 12px 0 4px;
+            color: #666;
+        }
+        .bin-confirm-box {
+            margin: 0 0 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(230, 57, 70, 0.08);
+            border: 1px solid rgba(230, 57, 70, 0.18);
+            text-align: left;
+        }
+        .bin-confirm-box strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #a4161a;
+        }
+        .bin-confirm-box p {
+            margin: 0;
+            color: #5a6270;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        .bin-confirm-list {
+            margin: 10px 0 0;
+            padding-left: 18px;
+            color: #2f3542;
+        }
+        .bin-confirm-list li {
+            margin: 4px 0;
+            font-weight: 700;
+        }
+        .bin-confirm-actions {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .bin-cancel-btn {
+            min-width: 120px;
         }
         .expiry-list-item {
             display: flex;
@@ -847,12 +1027,14 @@
         .item-group {
             margin-bottom: 18px;
         }
+        .item-list .item-group:first-of-type {
+            margin-top: -6px;
+        }
         .item-group h3 {
-            margin: 0 0 10px 0;
+            margin: 0;
             color: #444;
             font-size: 1.1em;
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-            padding-bottom: 6px;
+            text-align: center;
         }
         .item-checkbox {
             margin: 6px 0;
@@ -1140,6 +1322,11 @@
         let sauceMetadataMap = new Map();
         let pendingBoughtAdjustments = {};
         let pendingManageStockChanges = {};
+        let manageStockUseTimesTen = false;
+        let pendingDeleteSelections = {};
+        let showBinConfirmPrompt = false;
+        let lastItemListSource = 'home';
+        let currentItemListMode = 'manage';
         let appMessageTimeoutId = null;
         
         // Google Apps Script web app endpoint
@@ -1320,6 +1507,11 @@
                 return;
             }
 
+            if (container?.classList.contains('bought-open')) {
+                showSecretView();
+                return;
+            }
+
             if (container?.classList.contains('item-list-open')) {
                 hideItemList();
                 return;
@@ -1340,6 +1532,10 @@
             eggQuantity = 2;
             pendingBoughtAdjustments = {};
             pendingManageStockChanges = {};
+            manageStockUseTimesTen = false;
+            pendingDeleteSelections = {};
+            showBinConfirmPrompt = false;
+            currentItemListMode = 'manage';
 
             resultsDiv?.classList.remove('show');
             itemListDiv?.classList.remove('show');
@@ -1569,7 +1765,11 @@
             }
 
             if (itemListDiv?.classList.contains('show')) {
-                showItemList();
+                if (currentItemListMode === 'bin') {
+                    showBinList();
+                } else {
+                    showItemList();
+                }
             }
 
             if (secretView?.classList.contains('show')) {
@@ -1663,7 +1863,7 @@
                         useExpiringBtn.disabled = false;
                         useExpiringBtn.textContent = 'Use Expiring';
                     }
-                    statusDiv.onclick = showItemList;
+                    statusDiv.onclick = null;
                     refreshVisibleContent();
 
                     // Merge sauce metadata from the secondary endpoint after the main data is already usable.
@@ -1736,6 +1936,12 @@
             const boughtButtonAttrs = hasLoadedData
                 ? 'style="background: linear-gradient(45deg, #2a9d8f, #1d7f73);"'
                 : 'disabled title="Load spreadsheet first"';
+            const manageStockButtonAttrs = hasLoadedData
+                ? 'style="background: linear-gradient(45deg, #4CAF50, #388E3C);"'
+                : 'disabled title="Load spreadsheet first"';
+            const binButtonAttrs = hasLoadedData
+                ? 'style="background: linear-gradient(45deg, #e63946, #c1121f);"'
+                : 'disabled title="Load spreadsheet first"';
             document.querySelector('.buttons-container').style.display = 'none';
             resultsDiv.classList.remove('show');
             itemListDiv.classList.remove('show');
@@ -1747,6 +1953,8 @@
                     <button onclick="showExpiringItems()" ${expiringButtonAttrs}>${hasLoadedData ? '⏳ Expiring' : 'Loading...'}</button>
                     <button onclick="showShoppingList()" ${shoppingButtonAttrs}>${hasLoadedData ? '🛍️ Shopping List' : 'Loading...'}</button>
                     <button onclick="showBoughtItems()" ${boughtButtonAttrs}>${hasLoadedData ? '🛒 I Bought' : 'Loading...'}</button>
+                    <button onclick="showItemList()" ${manageStockButtonAttrs}>${hasLoadedData ? '📦 Manage Stock' : 'Loading...'}</button>
+                    <button onclick="showBinList()" ${binButtonAttrs}>${hasLoadedData ? '🗑️ Bin' : 'Loading...'}</button>
                 </div>
                 <div class="secret-menu-close-wrap">
                     <button class="secret-menu-close-btn" onclick="hideSecretView()" aria-label="Close secret menu" title="Close">✕</button>
@@ -2008,11 +2216,19 @@
         }
 
         function showItemList() {
+            currentItemListMode = 'manage';
             const itemListDiv = document.getElementById('itemList');
             const buttonsContainer = document.getElementById('buttons-container');
             const resultsDiv = document.getElementById('results');
             const secretView = document.getElementById('secretView');
             const container = document.querySelector('.container');
+            if (container?.classList.contains('secret-open') || secretView.classList.contains('show')) {
+                lastItemListSource = 'secret';
+            } else if (container?.classList.contains('results-open') || resultsDiv.classList.contains('show') || currentMeal) {
+                lastItemListSource = 'results';
+            } else {
+                lastItemListSource = 'home';
+            }
             secretView.classList.remove('bought-mode');
             setStatusVisibility(false);
 
@@ -2045,9 +2261,22 @@
             });
 
             // Build HTML
-            let html = '<h2>Manage Items</h2>';
-            for (const category in categories) {
-                html += `<div class="item-group"><h3>${category}</h3>`;
+            let html = '';
+            const categoryKeys = Object.keys(categories);
+            categoryKeys.forEach((category, index) => {
+                html += `
+                    <div class="item-group">
+                        <div class="item-group-header">
+                            <span class="item-group-header-spacer" aria-hidden="true"></span>
+                            <h3>${category}</h3>
+                            ${index === 0 ? `
+                                <label class="stock-multiplier-toggle">
+                                    <input type="checkbox" ${manageStockUseTimesTen ? 'checked' : ''} onchange="manageStockUseTimesTen = this.checked">
+                                    <span>x10</span>
+                                </label>
+                            ` : '<span class="item-group-header-spacer" aria-hidden="true"></span>'}
+                        </div>
+                `;
                 categories[category].forEach(({ item, enabled, id, rowIndex, stock, stockDelta }) => {
                     const adjustmentClass = stockDelta > 0 ? 'positive' : stockDelta < 0 ? 'negative' : '';
                     const adjustmentText = stockDelta > 0 ? `+${stockDelta}` : `${stockDelta}`;
@@ -2070,7 +2299,7 @@
                     `;
                 });
                 html += '</div>';
-            }
+            });
             html += `
                 <div class="item-list-actions">
                     <button class="save-btn" onclick="saveChanges()">Save Changes</button>
@@ -2082,17 +2311,232 @@
             itemListDiv.classList.add('show');
         }
 
+        function getBinItems() {
+            return spreadsheetData
+                .filter(row => String(row?.Food ?? '').trim() !== '' && String(row?.Category ?? '').trim() !== '')
+                .map(row => {
+                    const expiryDate = getItemExpiryDate(row);
+                    const daysUntilExpiry = expiryDate ? getDaysUntil(expiryDate) : null;
+
+                    return {
+                        id: row.id || '',
+                        rowIndex: row.rowIndex || '',
+                        item: row.Food,
+                        category: row.Category,
+                        expiryDate,
+                        daysUntilExpiry
+                    };
+                })
+                .sort((a, b) => {
+                    const aHasExpiry = Number.isFinite(a.daysUntilExpiry);
+                    const bHasExpiry = Number.isFinite(b.daysUntilExpiry);
+
+                    if (aHasExpiry && bHasExpiry) {
+                        const aExpired = a.daysUntilExpiry < 0;
+                        const bExpired = b.daysUntilExpiry < 0;
+
+                        if (aExpired !== bExpired) {
+                            return aExpired ? -1 : 1;
+                        }
+
+                        if (aExpired && bExpired) {
+                            const expiredOrder = b.daysUntilExpiry - a.daysUntilExpiry;
+                            if (expiredOrder !== 0) {
+                                return expiredOrder;
+                            }
+                        } else {
+                            const upcomingOrder = a.daysUntilExpiry - b.daysUntilExpiry;
+                            if (upcomingOrder !== 0) {
+                                return upcomingOrder;
+                            }
+                        }
+
+                        const exactDateOrder = a.expiryDate - b.expiryDate;
+                        if (exactDateOrder !== 0) {
+                            return exactDateOrder;
+                        }
+                    } else if (aHasExpiry !== bHasExpiry) {
+                        return aHasExpiry ? -1 : 1;
+                    }
+
+                    const itemOrder = String(a.item).localeCompare(String(b.item));
+                    return itemOrder !== 0 ? itemOrder : String(a.category).localeCompare(String(b.category));
+                });
+        }
+
+        function formatBinExpiryLabel(entry) {
+            if (!Number.isFinite(entry.daysUntilExpiry)) {
+                return 'No expiry date';
+            }
+
+            if (entry.daysUntilExpiry < 0) {
+                return `Expired ${formatDaysUntilText(entry.daysUntilExpiry)}`;
+            }
+
+            if (entry.daysUntilExpiry === 0) {
+                return 'Expires today';
+            }
+
+            return `Expires ${formatDaysUntilText(entry.daysUntilExpiry)}`;
+        }
+
+        function showBinList() {
+            if (spreadsheetData.length === 0) {
+                showAppMessage('Please wait for spreadsheet to load', 'info');
+                return;
+            }
+
+            currentItemListMode = 'bin';
+            lastItemListSource = 'secret';
+
+            const itemListDiv = document.getElementById('itemList');
+            const resultsDiv = document.getElementById('results');
+            const secretView = document.getElementById('secretView');
+            const container = document.querySelector('.container');
+            setStatusVisibility(false);
+
+            const binItems = getBinItems();
+            const selectedCount = Object.keys(pendingDeleteSelections).length;
+            const isConfirming = showBinConfirmPrompt && selectedCount > 0;
+
+            container.classList.toggle('bin-confirm-open', isConfirming);
+            document.querySelector('.buttons-container').style.display = 'none';
+            resultsDiv.classList.remove('show');
+            container.classList.remove('results-open');
+            secretView.classList.remove('show');
+            secretView.classList.remove('bought-mode');
+            container.classList.remove('secret-open', 'secret-menu-open', 'bought-open');
+            container.classList.add('item-list-open');
+            const deleteButtonLabel = isConfirming
+                ? 'Awaiting confirmation...'
+                : (selectedCount > 0 ? `Delete Selected (${selectedCount})` : 'Delete Selected');
+
+            let html = isConfirming ? '' : `
+                <h2>🗑️ Bin</h2>
+            `;
+
+            if (isConfirming) {
+                const selectedItems = binItems.filter(entry => pendingDeleteSelections[String(entry.rowIndex || '')]);
+                html += `
+                    <div class="bin-confirm-box">
+                        <strong>Are you throwing out:</strong>
+                        <ul class="bin-confirm-list">
+                            ${selectedItems.map(entry => `<li>${entry.item}</li>`).join('')}
+                        </ul>
+                        <div class="bin-confirm-actions">
+                            <button class="save-btn delete-save-btn" onclick="confirmDeleteSelectedItems()">Yes, set to 0</button>
+                            <button class="save-btn reset-btn bin-cancel-btn" onclick="cancelBinConfirmation()">Cancel</button>
+                        </div>
+                    </div>
+                `;
+
+                itemListDiv.innerHTML = html;
+                itemListDiv.classList.add('show');
+                itemListDiv.scrollTop = 0;
+                return;
+            }
+
+            if (binItems.length === 0) {
+                html += '<p class="bin-empty-state">No items available to bin.</p>';
+            } else {
+                binItems.forEach(entry => {
+                    const rowKey = String(entry.rowIndex || '');
+                    const isChecked = pendingDeleteSelections[rowKey] ? 'checked' : '';
+                    const expiryClass = Number.isFinite(entry.daysUntilExpiry) ? getExpiryClass(entry.daysUntilExpiry) : '';
+
+                    html += `
+                        <div class="item-checkbox">
+                            <div class="item-checkbox-row bin-item-row">
+                                <label class="item-checkbox-main bin-item-main">
+                                    <input type="checkbox" ${isChecked} onchange="toggleBinSelection('${rowKey}', this.checked)">
+                                    <span class="bin-item-meta">
+                                        <span class="item-name-text">${entry.item}</span>
+                                        <span class="stock-note">${entry.category} • <span class="bin-expiry-note ${expiryClass}">${formatBinExpiryLabel(entry)}</span></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `
+                <div class="item-list-actions">
+                    <button class="save-btn delete-save-btn ${selectedCount > 0 ? 'armed' : ''}" onclick="deleteSelectedItems()" ${selectedCount === 0 ? 'disabled' : ''}>${deleteButtonLabel}</button>
+                    <button class="save-btn reset-btn" onclick="resetBinSelections()">Reset</button>
+                </div>
+            `;
+
+            itemListDiv.innerHTML = html;
+            itemListDiv.classList.add('show');
+            itemListDiv.scrollTop = 0;
+        }
+
+        function toggleBinSelection(rowIndex, isSelected) {
+            const key = String(rowIndex || '');
+            if (!key) {
+                return;
+            }
+
+            showBinConfirmPrompt = false;
+
+            if (isSelected) {
+                pendingDeleteSelections[key] = true;
+            } else {
+                delete pendingDeleteSelections[key];
+            }
+
+            const deleteBtn = document.querySelector('#itemList .delete-save-btn');
+            if (deleteBtn) {
+                const selectedCount = Object.keys(pendingDeleteSelections).length;
+                deleteBtn.disabled = selectedCount === 0;
+                deleteBtn.classList.toggle('armed', selectedCount > 0);
+                deleteBtn.textContent = selectedCount > 0 ? `Delete Selected (${selectedCount})` : 'Delete Selected';
+            }
+        }
+
+        function resetBinSelections() {
+            const itemListDiv = document.getElementById('itemList');
+            const previousScroll = itemListDiv ? itemListDiv.scrollTop : 0;
+
+            pendingDeleteSelections = {};
+            showBinConfirmPrompt = false;
+            showBinList();
+
+            requestAnimationFrame(() => {
+                const updatedItemList = document.getElementById('itemList');
+                if (updatedItemList) {
+                    updatedItemList.scrollTop = previousScroll;
+                }
+            });
+        }
+
         function hideItemList() {
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
+            const returnTarget = lastItemListSource;
+
             pendingManageStockChanges = {};
+            manageStockUseTimesTen = false;
+            pendingDeleteSelections = {};
+            showBinConfirmPrompt = false;
+            currentItemListMode = 'manage';
             itemListDiv.classList.remove('show');
-            container?.classList.remove('item-list-open');
-            setStatusVisibility(!currentMeal);
-            if (currentMeal) {
-                container?.classList.add('results-open');
+            container?.classList.remove('item-list-open', 'bin-confirm-open');
+
+            if (returnTarget === 'secret') {
+                showSecretView();
+                return;
             }
+
             document.querySelector('.buttons-container').style.display = 'flex';
+
+            if (returnTarget === 'results' && currentMeal) {
+                setStatusVisibility(false);
+                displayResults(currentMeal);
+            } else {
+                setStatusVisibility(true);
+            }
         }
 
         function changeManageStock(rowIndex, delta) {
@@ -2112,7 +2556,8 @@
             const currentStock = Object.prototype.hasOwnProperty.call(pendingManageStockChanges, key)
                 ? pendingManageStockChanges[key]
                 : originalStock;
-            const nextStock = Math.max(0, currentStock + delta);
+            const stepAmount = manageStockUseTimesTen ? 10 : 1;
+            const nextStock = Math.max(0, currentStock + (delta * stepAmount));
 
             if (nextStock === originalStock) {
                 delete pendingManageStockChanges[key];
@@ -2172,7 +2617,7 @@
             const secretView = document.getElementById('secretView');
             const resultsDiv = document.getElementById('results');
             const container = document.querySelector('.container');
-            setStatusVisibility(true);
+            setStatusVisibility(false);
             secretView.classList.remove('bought-mode');
             container?.classList.remove('secret-menu-open');
             document.querySelector('.buttons-container').style.display = 'none';
@@ -2207,7 +2652,12 @@
                 .filter(Boolean)
                 .sort((a, b) => a.expiryDate - b.expiryDate);
 
-            let html = '<h2>⏳ Expiring Items</h2>';
+            let html = `
+                <div class="secret-panel-header">
+                    <h2>⏳ Expiring Items</h2>
+                </div>
+                <div class="secret-panel-body">
+            `;
 
             if (expiringItems.length === 0) {
                 html += '<p>No items expiring in the next 14 days.</p>';
@@ -2227,6 +2677,7 @@
             }
 
             html += `
+                </div>
                 <div class="secret-return-wrap">
                     <button class="secret-return-btn" onclick="showSecretView()">↩ Return</button>
                 </div>
@@ -2246,7 +2697,7 @@
             const resultsDiv = document.getElementById('results');
             const itemListDiv = document.getElementById('itemList');
             const container = document.querySelector('.container');
-            setStatusVisibility(true);
+            setStatusVisibility(false);
             secretView.classList.remove('bought-mode');
             container.classList.remove('secret-menu-open');
             document.querySelector('.buttons-container').style.display = 'none';
@@ -2255,7 +2706,12 @@
             container.classList.add('secret-open');
 
             const shoppingItems = getShoppingListItems();
-            let html = '<h2>🛍️ Shopping List</h2>';
+            let html = `
+                <div class="secret-panel-header">
+                    <h2>🛍️ Shopping List</h2>
+                </div>
+                <div class="secret-panel-body">
+            `;
 
             if (shoppingItems.length === 0) {
                 html += '<p>Nothing is low or out of stock right now.</p>';
@@ -2290,6 +2746,7 @@
             }
 
             html += `
+                </div>
                 <div class="secret-return-wrap">
                     <button class="secret-return-btn" onclick="showSecretView()">↩ Return</button>
                 </div>
@@ -2464,6 +2921,10 @@
                     if (row) {
                         row.Stock = update.stock;
                         row.Exclusions = update.stock;
+                        if (String(row.Category).toLowerCase().trim() === 'sauce' && Number(update.stock) <= 0) {
+                            row.Opened = 'FALSE';
+                            row['Open date'] = '';
+                        }
                     }
                 }
 
@@ -2535,6 +2996,10 @@
                     if (row) {
                         row.Stock = update.stock;
                         row.Exclusions = update.stock;
+                        if (String(row.Category).toLowerCase().trim() === 'sauce' && Number(update.stock) <= 0) {
+                            row.Opened = 'FALSE';
+                            row['Open date'] = '';
+                        }
                     }
                 }
 
@@ -2581,9 +3046,15 @@
             const normalizedCategory = category.toLowerCase().trim();
             const stockValue = update.stock;
             const enabledValue = update.enabled ? 'TRUE' : 'FALSE';
-            const openedValue = normalizedCategory === 'sauce'
-                ? (isOpenedValue(update.opened) ? 'TRUE' : 'FALSE')
-                : (isOpenedValue(getSauceOpenedValue(update)) ? 'TRUE' : 'FALSE');
+            const shouldResetSauceState = normalizedCategory === 'sauce' && Number(stockValue) <= 0;
+            const openedValue = shouldResetSauceState
+                ? 'FALSE'
+                : (normalizedCategory === 'sauce'
+                    ? (isOpenedValue(update.opened) ? 'TRUE' : 'FALSE')
+                    : (isOpenedValue(getSauceOpenedValue(update)) ? 'TRUE' : 'FALSE'));
+            const openDateValue = shouldResetSauceState
+                ? ''
+                : (normalizedCategory === 'sauce' ? (update.openDate ?? '') : getSauceOpenDateValue(update));
 
             const payload = {
                 action: 'update',
@@ -2595,7 +3066,7 @@
                     Stock: stockValue,
                     Exclusions: stockValue,
                     Opened: openedValue,
-                    'Open date': normalizedCategory === 'sauce' ? (update.openDate ?? '') : getSauceOpenDateValue(update),
+                    'Open date': openDateValue,
                     ShelfLifeDays: normalizedCategory === 'sauce' ? (update.shelfLifeDays ?? '') : getSauceShelfLifeValue(update)
                     // Intentionally do not write `UseByDate` here.
                     // Column H is controlled by the sheet's ARRAYFORMULA.
@@ -2615,6 +3086,114 @@
             }
 
             return result;
+        }
+
+        async function deleteSelectedItems() {
+            const selectedRowIndexes = Object.keys(pendingDeleteSelections).filter(key => pendingDeleteSelections[key]);
+            if (selectedRowIndexes.length === 0) {
+                showAppMessage('Select at least one item to bin first.', 'info');
+                return;
+            }
+
+            const itemListDiv = document.getElementById('itemList');
+            const previousScroll = itemListDiv ? itemListDiv.scrollTop : 0;
+            showBinConfirmPrompt = true;
+            showBinList();
+
+            requestAnimationFrame(() => {
+                const updatedItemList = document.getElementById('itemList');
+                if (updatedItemList) {
+                    updatedItemList.scrollTop = previousScroll;
+                }
+            });
+        }
+
+        function cancelBinConfirmation() {
+            const itemListDiv = document.getElementById('itemList');
+            const previousScroll = itemListDiv ? itemListDiv.scrollTop : 0;
+            showBinConfirmPrompt = false;
+            showBinList();
+
+            requestAnimationFrame(() => {
+                const updatedItemList = document.getElementById('itemList');
+                if (updatedItemList) {
+                    updatedItemList.scrollTop = previousScroll;
+                }
+            });
+        }
+
+        async function confirmDeleteSelectedItems() {
+            const selectedRowIndexes = Object.keys(pendingDeleteSelections).filter(key => pendingDeleteSelections[key]);
+            if (selectedRowIndexes.length === 0) {
+                showBinConfirmPrompt = false;
+                showAppMessage('Select at least one item to bin first.', 'info');
+                return;
+            }
+
+            const selectedRows = selectedRowIndexes
+                .map(rowIndex => spreadsheetData.find(item => String(item.rowIndex) === String(rowIndex)))
+                .filter(Boolean);
+
+            if (selectedRows.length === 0) {
+                showBinConfirmPrompt = false;
+                showAppMessage('Could not find the selected items.', 'error');
+                return;
+            }
+
+            const deleteBtn = document.querySelector('#itemList .delete-save-btn');
+            const resetBtn = document.querySelector('#itemList .reset-btn');
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.textContent = 'Deleting...';
+            }
+            if (resetBtn) {
+                resetBtn.disabled = true;
+            }
+
+            try {
+                for (const row of selectedRows) {
+                    await sendUpdateToAppsScript({
+                        id: row.id || '',
+                        rowIndex: row.rowIndex || '',
+                        item: row.Food,
+                        category: row.Category,
+                        enabled: String(row['Enabled']).toUpperCase().trim() === 'TRUE',
+                        stock: 0,
+                        opened: getSauceOpenedValue(row),
+                        openDate: getSauceOpenDateValue(row),
+                        shelfLifeDays: getSauceShelfLifeValue(row),
+                        exclusions: row.Exclusions || ''
+                    });
+
+                    row.Stock = 0;
+                    row.Exclusions = 0;
+                    if (String(row.Category).toLowerCase().trim() === 'sauce') {
+                        row.Opened = 'FALSE';
+                        row['Open date'] = '';
+                    }
+                }
+
+                showBinConfirmPrompt = false;
+                pendingDeleteSelections = {};
+                loadSpreadsheet();
+                hideItemList();
+
+                const itemLabel = selectedRows.length === 1 ? 'item' : 'items';
+                showAppMessage(`Binned ${selectedRows.length} ${itemLabel} and set stock to 0.`, 'success');
+            } catch (error) {
+                console.error('Error deleting items:', error);
+                showAppMessage(`Error binning items: ${error.message}`, 'error', 4500);
+                showBinConfirmPrompt = false;
+
+                if (deleteBtn) {
+                    const selectedCount = Object.keys(pendingDeleteSelections).length;
+                    deleteBtn.disabled = selectedCount === 0;
+                    deleteBtn.textContent = selectedCount > 0 ? `Delete Selected (${selectedCount})` : 'Delete Selected';
+                }
+                if (resetBtn) {
+                    resetBtn.disabled = false;
+                }
+            }
         }
 
         async function saveChanges() {
