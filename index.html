@@ -2258,9 +2258,7 @@
                     restoreScrollPosition('itemList', previousItemListScroll);
                 } else {
                     showItemList();
-                    restoreScrollPosition('itemList', previousItemListScroll, () => {
-                        updateManageStockHeaderCategory();
-                    });
+                    restoreScrollPosition('itemList', previousItemListScroll);
                 }
             }
 
@@ -2789,11 +2787,10 @@
 
             // Build HTML
             const categoryKeys = Object.keys(categories);
-            const initialCategory = categoryKeys[0] || 'Manage Stock';
             let html = `
                 <div class="manage-stock-sticky-header">
                     <button type="button" class="manage-stock-close-btn" onclick="hideItemList()" aria-label="Close manage stock" title="Close">✕</button>
-                    <h2 id="manageStockHeaderLabel" class="manage-stock-current-category">${initialCategory}</h2>
+                    <h2 class="manage-stock-current-category">Manage Stock</h2>
                     <label class="stock-multiplier-toggle">
                         <input type="checkbox" ${manageStockUseTimesTen ? 'checked' : ''} onchange="manageStockUseTimesTen = this.checked">
                         <span>x10</span>
@@ -2803,6 +2800,7 @@
             categoryKeys.forEach((category) => {
                 html += `
                     <div class="item-group" data-category-name="${category}">
+                        <h3>${category}</h3>
                 `;
                 categories[category].forEach(({ item, enabled, id, rowIndex, stock, stockDelta }) => {
                     const adjustmentClass = stockDelta > 0 ? 'positive' : stockDelta < 0 ? 'negative' : '';
@@ -2836,9 +2834,6 @@
 
             itemListDiv.innerHTML = html;
             itemListDiv.classList.add('show');
-            itemListDiv.removeEventListener('scroll', updateManageStockHeaderCategory);
-            itemListDiv.addEventListener('scroll', updateManageStockHeaderCategory);
-            requestAnimationFrame(updateManageStockHeaderCategory);
         }
 
         function getBinItems() {
@@ -3127,7 +3122,6 @@
                 const updatedItemList = document.getElementById('itemList');
                 if (updatedItemList) {
                     updatedItemList.scrollTop = previousScroll;
-                    updateManageStockHeaderCategory();
                 }
             });
         }
@@ -3144,7 +3138,6 @@
                 const updatedItemList = document.getElementById('itemList');
                 if (updatedItemList) {
                     updatedItemList.scrollTop = previousScroll;
-                    updateManageStockHeaderCategory();
                 }
             });
         }
