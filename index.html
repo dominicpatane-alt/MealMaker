@@ -1110,7 +1110,7 @@
             grid-column: 2;
             justify-self: center;
             margin-top: 0;
-            min-width: 180px;
+            min-width: 120px;
         }
         .item-list-actions .reset-btn {
             grid-column: 3;
@@ -1299,6 +1299,11 @@
         }
         .item-list .item-group:first-of-type {
             margin-top: -6px;
+        }
+        .container.manage-stock-mode .item-group + .item-group {
+            margin-top: 16px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.08);
         }
         .item-group h3 {
             margin: 0;
@@ -2798,7 +2803,6 @@
             categoryKeys.forEach((category) => {
                 html += `
                     <div class="item-group" data-category-name="${category}">
-                        <h3>${category}</h3>
                 `;
                 categories[category].forEach(({ item, enabled, id, rowIndex, stock, stockDelta }) => {
                     const adjustmentClass = stockDelta > 0 ? 'positive' : stockDelta < 0 ? 'negative' : '';
