@@ -1132,33 +1132,38 @@
         }
         .bin-item-row {
             align-items: center;
+            padding-top: 7px;
+            padding-bottom: 7px;
         }
         .bin-item-main {
-            align-items: center;
+            align-items: flex-start;
             width: 100%;
-            white-space: nowrap;
+            white-space: normal;
         }
         .bin-item-meta {
             min-width: 0;
             flex: 1 1 auto;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
             text-align: left;
             overflow: hidden;
         }
         .bin-item-meta .item-name-text {
-            flex: 0 1 auto;
+            width: 100%;
+            font-weight: 700;
         }
         .bin-item-details {
             min-width: 0;
-            flex: 1 1 auto;
-            font-size: 0.82em;
+            width: 100%;
+            font-size: 0.8em;
             font-weight: 700;
             color: #666;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.2;
         }
         .bin-expiry-note {
             font-weight: 800;
@@ -2873,7 +2878,7 @@
                                     <input type="checkbox" ${isChecked} onchange="toggleBinSelection('${rowKey}', this.checked)">
                                     <span class="bin-item-meta">
                                         <span class="item-name-text">${entry.item}</span>
-                                        <span class="bin-item-details">${entry.category} • <span class="bin-expiry-note ${expiryClass}">${formatBinExpiryLabel(entry)}</span></span>
+                                        <span class="bin-item-details"><span class="bin-expiry-note ${expiryClass}">${formatBinExpiryLabel(entry)}</span></span>
                                     </span>
                                 </label>
                             </div>
