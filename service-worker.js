@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meal-maker-v2026-04-05';
+const CACHE_NAME = 'meal-maker-v2026-04-05b';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -31,6 +31,12 @@ self.addEventListener('activate', event => {
     ))
   );
   self.clients.claim();
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', event => {
