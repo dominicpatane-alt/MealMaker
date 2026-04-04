@@ -1682,11 +1682,29 @@
             container.style.transform = `translateY(${Math.min(28, distance * 0.35)}px)`;
         }
 
+        function isHomeScreenActive() {
+            const container = document.querySelector('.container');
+            const resultsDiv = document.getElementById('results');
+            const itemListDiv = document.getElementById('itemList');
+            const secretView = document.getElementById('secretView');
+
+            return Boolean(
+                container &&
+                !container.classList.contains('results-open') &&
+                !container.classList.contains('secret-open') &&
+                !container.classList.contains('secret-menu-open') &&
+                !container.classList.contains('item-list-open') &&
+                !container.classList.contains('bought-open') &&
+                !resultsDiv?.classList.contains('show') &&
+                !itemListDiv?.classList.contains('show') &&
+                !secretView?.classList.contains('show')
+            );
+        }
+
         function triggerPullRefresh() {
             updatePullRefreshUI(0, false);
             goHome();
-            showAppMessage('Refreshing...', 'info', 1800);
-            loadSpreadsheet();
+            showAppMessage('Refreshing...', 'info', 1200);
 
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistration().then(registration => {
@@ -1697,6 +1715,10 @@
                     }
                 });
             }
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 120);
         }
 
         function setupPullToRefresh() {
@@ -1707,6 +1729,11 @@
 
             document.addEventListener('touchstart', event => {
                 if (event.touches.length !== 1) {
+                    return;
+                }
+
+                if (!isHomeScreenActive()) {
+                    pullRefreshActive = false;
                     return;
                 }
 
@@ -1732,7 +1759,7 @@
                 const atTop = !scroller || typeof scroller.scrollTop !== 'number' || scroller.scrollTop <= 0;
                 const distance = Math.max(0, currentY - pullRefreshStartY);
 
-                if (!atTop || distance <= 0) {
+                if (!isHomeScreenActive() || !atTop || distance <= 0) {
                     updatePullRefreshUI(0, false);
                     return;
                 }
