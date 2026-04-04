@@ -1636,7 +1636,19 @@
         });
 
         async function fetchApiJson(url, options = {}) {
-            const response = await fetch(url, options);
+            const method = String(options.method || 'GET').toUpperCase();
+            const isGetRequest = method === 'GET';
+            const requestUrl = isGetRequest ? new URL(url, window.location.href) : null;
+
+            if (requestUrl) {
+                requestUrl.searchParams.set('_ts', Date.now().toString());
+            }
+
+            const response = await fetch(requestUrl ? requestUrl.toString() : url, {
+                ...options,
+                method,
+                cache: isGetRequest ? 'no-store' : (options.cache || 'no-cache')
+            });
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
@@ -3283,11 +3295,12 @@
                 shoppingItems.forEach(entry => {
                     let statusLabel = 'Low Stock';
                     let statusClass = 'low';
-                    let subtext = `${entry.category} • ${entry.stock} left`;
+                    let subtext = `Low Stock: ${entry.stock}`;
 
                     if (entry.status === 'out') {
                         statusLabel = 'Out of Stock';
                         statusClass = 'out';
+                        subtext = 'Low Stock: 0';
                     } else if (entry.status === 'expiring') {
                         statusLabel = 'Expires soon';
                         statusClass = 'expiring';
@@ -3870,7 +3883,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', async () => {
                 try {
-                    const registration = await navigator.serviceWorker.register('./service-worker.js?v=20260405d');
+                    const registration = await navigator.serviceWorker.register('./service-worker.js?v=20260405e');
 
                     const applyWaitingUpdate = currentRegistration => {
                         if (!currentRegistration?.waiting) {

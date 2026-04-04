@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meal-maker-v2026-04-05d';
+const CACHE_NAME = 'meal-maker-v2026-04-05e';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const STATIC_ASSETS = [
   './Sprites/sanji-icon-512.png?v=3',
   'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
+const LIVE_DATA_HOSTS = new Set(['script.google.com', 'opensheet.elk.sh']);
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -50,6 +51,14 @@ self.addEventListener('fetch', event => {
   const acceptsHtml = (request.headers.get('accept') || '').includes('text/html');
   const isNavigationRequest = request.mode === 'navigate' || acceptsHtml;
   const isVersionRequest = requestUrl.origin === self.location.origin && requestUrl.pathname.endsWith('/version.json');
+  const isLiveDataRequest = LIVE_DATA_HOSTS.has(requestUrl.hostname);
+
+  if (isLiveDataRequest) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' }).catch(() => fetch(request))
+    );
+    return;
+  }
 
   if (isVersionRequest) {
     event.respondWith(
