@@ -125,7 +125,8 @@
             font-weight: 900;
             line-height: 1;
         }
-        .container.item-list-open.bin-confirm-open .home-btn {
+        .container.item-list-open.bin-confirm-open .home-btn,
+        .container.item-list-open.manage-stock-mode .home-btn {
             display: none;
         }
         .container.bought-open .home-btn {
@@ -707,6 +708,34 @@
                 padding: 14px 12px 12px;
                 max-height: 76vh;
             }
+            .container.item-list-open.manage-stock-mode {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+            .container.item-list-open.manage-stock-mode .item-list {
+                flex: 1 1 auto;
+                min-height: 0;
+                max-height: none;
+                height: auto;
+                margin-top: 6px;
+                padding: 0 10px 10px;
+            }
+            .manage-stock-sticky-header {
+                grid-template-columns: 40px minmax(0, 1fr) auto;
+                gap: 8px;
+                margin: 0 -10px 10px;
+                padding: 8px 10px 10px;
+            }
+            .manage-stock-close-btn {
+                width: 38px;
+                height: 38px;
+                border-radius: 11px;
+                font-size: 21px;
+            }
+            .manage-stock-current-category {
+                font-size: 1.06em;
+            }
             .secret-menu-options {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 max-width: 100%;
@@ -857,6 +886,22 @@
             .secret-view {
                 padding: 12px 10px 10px;
             }
+            .manage-stock-sticky-header {
+                grid-template-columns: 36px minmax(0, 1fr) auto;
+                gap: 6px;
+            }
+            .manage-stock-close-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 19px;
+            }
+            .manage-stock-current-category {
+                font-size: 1em;
+            }
+            .stock-multiplier-toggle {
+                padding: 5px 8px;
+                font-size: 0.8em;
+            }
             .secret-menu-options {
                 gap: 7px;
             }
@@ -887,6 +932,52 @@
         }
         .item-list.show {
             display: block;
+        }
+        .manage-stock-sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 14;
+            display: grid;
+            grid-template-columns: 44px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 10px;
+            margin: -16px -16px 12px;
+            padding: 10px 12px 12px;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+        }
+        .manage-stock-close-btn {
+            min-width: 0;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            margin: 0;
+            border-radius: 12px;
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(45deg, #e63946, #c1121f);
+            box-shadow: 0 4px 12px rgba(198, 18, 31, 0.24);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .manage-stock-close-btn:hover:not(:disabled) {
+            transform: none;
+            box-shadow: 0 6px 14px rgba(198, 18, 31, 0.28);
+        }
+        .manage-stock-current-category {
+            margin: 0;
+            min-width: 0;
+            font-size: 1.14em;
+            font-weight: 800;
+            color: #444;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .item-group-header {
             display: grid;
@@ -969,15 +1060,31 @@
             align-items: center;
         }
         .bin-item-main {
-            align-items: flex-start;
-            white-space: normal;
+            align-items: center;
+            width: 100%;
+            white-space: nowrap;
         }
         .bin-item-meta {
             min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            flex: 1 1 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             text-align: left;
+            overflow: hidden;
+        }
+        .bin-item-meta .item-name-text {
+            flex: 0 1 auto;
+        }
+        .bin-item-details {
+            min-width: 0;
+            flex: 1 1 auto;
+            font-size: 0.82em;
+            font-weight: 700;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .bin-expiry-note {
             font-weight: 800;
@@ -1745,7 +1852,7 @@
             itemListDiv?.classList.remove('show');
             secretView?.classList.remove('show');
             secretView?.classList.remove('bought-mode');
-            container?.classList.remove('results-open', 'secret-open', 'secret-menu-open', 'item-list-open', 'bought-open');
+            container?.classList.remove('results-open', 'secret-open', 'secret-menu-open', 'item-list-open', 'bought-open', 'manage-stock-mode', 'bin-confirm-open');
             document.querySelector('.buttons-container').style.display = 'flex';
             setStatusVisibility(true);
         }
@@ -2419,6 +2526,32 @@
             return icons[category] || '🍽️';
         }
 
+        function updateManageStockHeaderCategory() {
+            if (currentItemListMode !== 'manage') {
+                return;
+            }
+
+            const itemListDiv = document.getElementById('itemList');
+            const headerLabel = document.getElementById('manageStockHeaderLabel');
+            const stickyHeader = itemListDiv?.querySelector('.manage-stock-sticky-header');
+            const groups = itemListDiv ? Array.from(itemListDiv.querySelectorAll('.item-group[data-category-name]')) : [];
+
+            if (!itemListDiv || !headerLabel || !stickyHeader || groups.length === 0) {
+                return;
+            }
+
+            const threshold = itemListDiv.scrollTop + stickyHeader.offsetHeight + 8;
+            let activeCategory = groups[0].dataset.categoryName || '';
+
+            groups.forEach(group => {
+                if (group.offsetTop <= threshold) {
+                    activeCategory = group.dataset.categoryName || activeCategory;
+                }
+            });
+
+            headerLabel.textContent = activeCategory;
+        }
+
         function showItemList() {
             currentItemListMode = 'manage';
             const itemListDiv = document.getElementById('itemList');
@@ -2441,8 +2574,8 @@
             resultsDiv.classList.remove('show');
             container.classList.remove('results-open');
             secretView.classList.remove('show');
-            container.classList.remove('secret-open', 'secret-menu-open');
-            container.classList.add('item-list-open');
+            container.classList.remove('secret-open', 'secret-menu-open', 'bin-confirm-open');
+            container.classList.add('item-list-open', 'manage-stock-mode');
 
             // Group items by category
             const categories = {};
@@ -2465,21 +2598,22 @@
             });
 
             // Build HTML
-            let html = '';
             const categoryKeys = Object.keys(categories);
-            categoryKeys.forEach((category, index) => {
+            const initialCategory = categoryKeys[0] || 'Manage Stock';
+            let html = `
+                <div class="manage-stock-sticky-header">
+                    <button type="button" class="manage-stock-close-btn" onclick="hideItemList()" aria-label="Close manage stock" title="Close">✕</button>
+                    <h2 id="manageStockHeaderLabel" class="manage-stock-current-category">${initialCategory}</h2>
+                    <label class="stock-multiplier-toggle">
+                        <input type="checkbox" ${manageStockUseTimesTen ? 'checked' : ''} onchange="manageStockUseTimesTen = this.checked">
+                        <span>x10</span>
+                    </label>
+                </div>
+            `;
+            categoryKeys.forEach((category) => {
                 html += `
-                    <div class="item-group">
-                        <div class="item-group-header">
-                            <span class="item-group-header-spacer" aria-hidden="true"></span>
-                            <h3>${category}</h3>
-                            ${index === 0 ? `
-                                <label class="stock-multiplier-toggle">
-                                    <input type="checkbox" ${manageStockUseTimesTen ? 'checked' : ''} onchange="manageStockUseTimesTen = this.checked">
-                                    <span>x10</span>
-                                </label>
-                            ` : '<span class="item-group-header-spacer" aria-hidden="true"></span>'}
-                        </div>
+                    <div class="item-group" data-category-name="${category}">
+                        <h3>${category}</h3>
                 `;
                 categories[category].forEach(({ item, enabled, id, rowIndex, stock, stockDelta }) => {
                     const adjustmentClass = stockDelta > 0 ? 'positive' : stockDelta < 0 ? 'negative' : '';
@@ -2513,6 +2647,9 @@
 
             itemListDiv.innerHTML = html;
             itemListDiv.classList.add('show');
+            itemListDiv.removeEventListener('scroll', updateManageStockHeaderCategory);
+            itemListDiv.addEventListener('scroll', updateManageStockHeaderCategory);
+            requestAnimationFrame(updateManageStockHeaderCategory);
         }
 
         function getBinItems() {
@@ -2609,7 +2746,7 @@
             container.classList.remove('results-open');
             secretView.classList.remove('show');
             secretView.classList.remove('bought-mode');
-            container.classList.remove('secret-open', 'secret-menu-open', 'bought-open');
+            container.classList.remove('secret-open', 'secret-menu-open', 'bought-open', 'manage-stock-mode');
             container.classList.add('item-list-open');
             const deleteButtonLabel = isConfirming
                 ? 'Awaiting confirmation...'
@@ -2655,7 +2792,7 @@
                                     <input type="checkbox" ${isChecked} onchange="toggleBinSelection('${rowKey}', this.checked)">
                                     <span class="bin-item-meta">
                                         <span class="item-name-text">${entry.item}</span>
-                                        <span class="stock-note">${entry.category} • <span class="bin-expiry-note ${expiryClass}">${formatBinExpiryLabel(entry)}</span></span>
+                                        <span class="bin-item-details">${entry.category} • <span class="bin-expiry-note ${expiryClass}">${formatBinExpiryLabel(entry)}</span></span>
                                     </span>
                                 </label>
                             </div>
@@ -2725,8 +2862,9 @@
             pendingDeleteSelections = {};
             showBinConfirmPrompt = false;
             currentItemListMode = 'manage';
+            itemListDiv.removeEventListener('scroll', updateManageStockHeaderCategory);
             itemListDiv.classList.remove('show');
-            container?.classList.remove('item-list-open', 'bin-confirm-open');
+            container?.classList.remove('item-list-open', 'bin-confirm-open', 'manage-stock-mode');
 
             if (returnTarget === 'secret') {
                 showSecretView();
@@ -2774,6 +2912,7 @@
                 const updatedItemList = document.getElementById('itemList');
                 if (updatedItemList) {
                     updatedItemList.scrollTop = previousScroll;
+                    updateManageStockHeaderCategory();
                 }
             });
         }
@@ -2789,6 +2928,7 @@
                 const updatedItemList = document.getElementById('itemList');
                 if (updatedItemList) {
                     updatedItemList.scrollTop = previousScroll;
+                    updateManageStockHeaderCategory();
                 }
             });
         }
