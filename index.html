@@ -1953,6 +1953,22 @@
             });
         }
 
+        function formatDateForSpreadsheet(value) {
+            if (value === null || value === undefined || String(value).trim() === '') {
+                return '';
+            }
+
+            const parsedDate = value instanceof Date ? value : parseDateValue(value);
+            if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+                return '';
+            }
+
+            const day = String(parsedDate.getDate()).padStart(2, '0');
+            const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+            const year = parsedDate.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
         function computeUseByFromOpenDate(openDateValue, shelfLifeValue) {
             const openDate = parseDateValue(openDateValue);
             const shelfLifeDays = Number(shelfLifeValue);
@@ -2512,14 +2528,12 @@
             }
 
             const nextOpened = true;
-            const todayText = new Date().toLocaleDateString('en-AU');
+            const todayText = formatDateForSpreadsheet(new Date());
 
             const previousOpened = selection.opened;
             const previousOpenDate = selection.openDate;
             selection.opened = nextOpened;
-            if (!selection.openDate) {
-                selection.openDate = todayText;
-            }
+            selection.openDate = formatDateForSpreadsheet(selection.openDate) || todayText;
             if (!selection.expiry) {
                 const computedUseBy = computeUseByFromOpenDate(selection.openDate, selection.shelfLifeDays);
                 if (computedUseBy) {
@@ -3305,7 +3319,7 @@
                         statusLabel = 'Expires soon';
                         statusClass = 'expiring';
                         const dayLabel = entry.daysUntilExpiry === 1 ? 'day' : 'days';
-                        subtext = `${entry.category} • <span class="shopping-expiry-text">Expires: ${entry.daysUntilExpiry} ${dayLabel}</span>`;
+                        subtext = `<span class="shopping-expiry-text">Expires: ${entry.daysUntilExpiry} ${dayLabel}</span>`;
                     }
 
                     html += `
@@ -3629,9 +3643,10 @@
                 : (normalizedCategory === 'sauce'
                     ? (isOpenedValue(update.opened) ? 'TRUE' : 'FALSE')
                     : (isOpenedValue(getSauceOpenedValue(update)) ? 'TRUE' : 'FALSE'));
-            const openDateValue = shouldResetSauceState
+            const rawOpenDateValue = shouldResetSauceState
                 ? ''
                 : (normalizedCategory === 'sauce' ? (update.openDate ?? '') : getSauceOpenDateValue(update));
+            const openDateValue = formatDateForSpreadsheet(rawOpenDateValue);
 
             const payload = {
                 action: 'update',
