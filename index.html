@@ -264,10 +264,22 @@
             gap: 12px;
             max-width: 420px;
             margin: 0 auto;
+            align-items: stretch;
         }
         .secret-menu-options button {
             width: 100%;
             min-width: 0;
+            min-height: 50px;
+            padding: 11px 10px;
+            border-radius: 18px;
+            font-size: clamp(12px, 2.7vw, 14px);
+            line-height: 1.2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .secret-menu-options button:last-child:nth-child(odd) {
             grid-column: 1 / -1;
@@ -695,6 +707,18 @@
                 padding: 14px 12px 12px;
                 max-height: 76vh;
             }
+            .secret-menu-options {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                max-width: 100%;
+                gap: 8px;
+            }
+            .secret-menu-options button {
+                min-height: 44px;
+                padding: 10px 8px;
+                font-size: 12.5px;
+                border-radius: 16px;
+                box-shadow: 0 3px 10px rgba(255, 107, 107, 0.22);
+            }
             .secret-panel-header {
                 min-height: 36px;
                 margin: -14px -12px 10px;
@@ -771,11 +795,6 @@
                 padding: 0 12px;
                 font-size: 1em;
             }
-            .secret-menu-options {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                max-width: 100%;
-                gap: 10px;
-            }
             .secret-menu-options button:last-child:nth-child(odd) {
                 max-width: 180px;
             }
@@ -814,6 +833,40 @@
             .bought-actions-sticky .secret-return-btn {
                 flex: 1 1 100%;
                 width: 100%;
+            }
+            .item-list-actions {
+                grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.25fr) minmax(0, 0.95fr);
+                gap: 8px;
+            }
+            .item-list-actions .save-btn,
+            .item-list-actions .reset-btn {
+                min-width: 0;
+                width: 100%;
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+            .secret-return-wrap .save-btn,
+            .secret-return-wrap .secret-return-btn {
+                min-width: 0;
+            }
+        }
+        @media (max-width: 380px) {
+            .container {
+                padding: 10px 10px 14px;
+            }
+            .secret-view {
+                padding: 12px 10px 10px;
+            }
+            .secret-menu-options {
+                gap: 7px;
+            }
+            .secret-menu-options button {
+                min-height: 42px;
+                padding: 9px 6px;
+                font-size: 12px;
+            }
+            .secret-menu-options button:last-child:nth-child(odd) {
+                max-width: 160px;
             }
         }
         @media (max-width: 340px) {
