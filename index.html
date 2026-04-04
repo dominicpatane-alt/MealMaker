@@ -617,6 +617,13 @@
                 padding: 10px 8px calc(10px + env(safe-area-inset-bottom, 0px));
                 flex-wrap: nowrap;
             }
+            .bought-actions-sticky .save-btn {
+                position: relative;
+                top: -4px;
+                min-width: 200px;
+                padding: 14px 24px;
+                font-size: 16px;
+            }
         }
         @media (max-width: 430px) {
             .bought-actions-sticky {
@@ -785,8 +792,24 @@
             font-size: 0.82em;
             font-weight: 700;
             color: #5a6270;
-            min-width: 64px;
+            min-width: 78px;
+            text-align: right;
+        }
+        .manage-stock-label {
+            color: #7a8593;
+        }
+        .manage-stock-adjustment {
+            min-width: 28px;
             text-align: center;
+            font-size: 0.9em;
+            font-weight: 800;
+            color: #5a6270;
+        }
+        .manage-stock-adjustment.positive {
+            color: #1b8f2f;
+        }
+        .manage-stock-adjustment.negative {
+            color: #d62828;
         }
         .manage-stock-btn {
             min-width: 28px;
@@ -821,6 +844,14 @@
         .secret-return-wrap .save-btn,
         .secret-return-wrap .secret-return-btn {
             min-width: 160px;
+        }
+        .bought-actions-sticky .save-btn {
+            position: relative;
+            top: -4px;
+            min-width: 190px;
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 999px;
         }
         .save-btn:hover {
             transform: translateY(-1px);
@@ -1655,7 +1686,6 @@
                     opened: 'TRUE',
                     openDate: selection.openDate || todayText,
                     shelfLifeDays: selection.shelfLifeDays || '',
-                    useByDate: '',
                     exclusions: selection.exclusions || ''
                 });
 
@@ -1880,18 +1910,22 @@
                 const pendingStock = Object.prototype.hasOwnProperty.call(pendingManageStockChanges, String(rowIndex))
                     ? pendingManageStockChanges[String(rowIndex)]
                     : stock;
+                const stockDelta = pendingStock - stock;
 
                 if (!categories[category]) {
                     categories[category] = [];
                 }
-                categories[category].push({ item, enabled, id, rowIndex, stock: pendingStock });
+                categories[category].push({ item, enabled, id, rowIndex, stock, stockDelta });
             });
 
             // Build HTML
             let html = '<h2>Manage Items</h2>';
             for (const category in categories) {
                 html += `<div class="item-group"><h3>${category}</h3>`;
-                categories[category].forEach(({ item, enabled, id, rowIndex, stock }) => {
+                categories[category].forEach(({ item, enabled, id, rowIndex, stock, stockDelta }) => {
+                    const adjustmentClass = stockDelta > 0 ? 'positive' : stockDelta < 0 ? 'negative' : '';
+                    const adjustmentText = stockDelta > 0 ? `+${stockDelta}` : `${stockDelta}`;
+
                     html += `
                         <div class="item-checkbox">
                             <div class="item-checkbox-row">
@@ -1900,8 +1934,9 @@
                                     <span class="item-name-text">${item}</span>
                                 </label>
                                 <div class="manage-inline-controls">
-                                    <span class="manage-stock-value">${stock}</span>
+                                    <span class="manage-stock-value"><span class="manage-stock-label">Current:</span> ${stock}</span>
                                     <button type="button" class="manage-stock-btn" onclick="changeManageStock('${rowIndex || ''}', -1)">−</button>
+                                    <span class="manage-stock-adjustment ${adjustmentClass}">${adjustmentText}</span>
                                     <button type="button" class="manage-stock-btn" onclick="changeManageStock('${rowIndex || ''}', 1)">+</button>
                                 </div>
                             </div>
@@ -2186,7 +2221,6 @@
             html += `
                 <div class="secret-return-wrap bought-actions-sticky">
                     <button id="saveBoughtBtn" class="save-btn" onclick="saveBoughtItems()">Save Stock</button>
-                    <button class="secret-return-btn" onclick="showSecretView()">↩ Return</button>
                 </div>
             `;
 
@@ -2222,8 +2256,18 @@
         }
 
         function resetBoughtItems() {
+            const secretView = document.getElementById('secretView');
+            const previousScroll = secretView ? secretView.scrollTop : 0;
+
             pendingBoughtAdjustments = {};
             showBoughtItems();
+
+            requestAnimationFrame(() => {
+                const updatedSecretView = document.getElementById('secretView');
+                if (updatedSecretView) {
+                    updatedSecretView.scrollTop = previousScroll;
+                }
+            });
         }
 
         async function saveBoughtItems() {
@@ -2245,7 +2289,6 @@
                         opened: getSauceOpenedValue(row),
                         openDate: getSauceOpenDateValue(row),
                         shelfLifeDays: getSauceShelfLifeValue(row),
-                        useByDate: getSauceExpiryValue(row),
                         exclusions: row.Exclusions || ''
                     };
                 })
@@ -2330,7 +2373,6 @@
                         opened: getSauceOpenedValue(row),
                         openDate: getSauceOpenDateValue(row),
                         shelfLifeDays: getSauceShelfLifeValue(row),
-                        useByDate: isSauce ? '' : getSauceExpiryValue(row),
                         exclusions: row.Exclusions || ''
                     };
                 });
@@ -2403,8 +2445,9 @@
                     Exclusions: stockValue,
                     Opened: openedValue,
                     'Open date': normalizedCategory === 'sauce' ? (update.openDate ?? '') : getSauceOpenDateValue(update),
-                    ShelfLifeDays: normalizedCategory === 'sauce' ? (update.shelfLifeDays ?? '') : getSauceShelfLifeValue(update),
-                    UseByDate: normalizedCategory === 'sauce' ? '' : getSauceExpiryValue(update)
+                    ShelfLifeDays: normalizedCategory === 'sauce' ? (update.shelfLifeDays ?? '') : getSauceShelfLifeValue(update)
+                    // Intentionally do not write `UseByDate` here.
+                    // Column H is controlled by the sheet's ARRAYFORMULA.
                 }
             };
 
@@ -2455,7 +2498,6 @@
                         opened: getSauceOpenedValue(row),
                         openDate: getSauceOpenDateValue(row),
                         shelfLifeDays: getSauceShelfLifeValue(row),
-                        useByDate: getSauceExpiryValue(row),
                         exclusions: row.Exclusions || ''
                     });
                 }
